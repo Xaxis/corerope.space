@@ -1,0 +1,24 @@
+{
+  "name": "corerope",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.30.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @corerope/site dev",
+    "build": "pnpm --filter @corerope/site build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "biome check . && node tools/no-em-dash.mjs",
+    "format": "biome check --write .",
+    "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.8",
+    "@types/node": "24.19.0",
+    "axe-core": "4.14.1",
+    "playwright-core": "1.65.1",
+    "typescript": "7.0.2"
+  }
+}

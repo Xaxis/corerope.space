@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <title>Corerope</title>
+  <style>
+    .core { stroke: #2b2926; }
+    .bg { fill: #f6f4ef; }
+    @media (prefers-color-scheme: dark) { .core { stroke: #d9d5cb; } .bg { fill: #0f0f0e; } }
+  </style>
+  <rect class="bg" width="32" height="32" rx="7"/>
+  <path class="core" d="M16 5.5 A5.2 10.5 0 0 0 16 26.5" fill="none" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+  <path d="M2 18.5 C 8 18.5, 10 16, 16 16 S 24 13.5, 30 13.5" fill="none" stroke="#d4581f" stroke-width="2.6" stroke-linecap="round"/>
+  <path class="core" d="M16 5.5 A5.2 10.5 0 0 1 16 26.5" fill="none" stroke-width="4" stroke-linecap="round"/>
+</svg>

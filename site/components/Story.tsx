@@ -1,12 +1,19 @@
 "use client";
 
 // A story chapter: steps of text scroll past a stage that stays in view, and the scene follows the
-// step at the middle of the screen. Steps are in reading order in the page; the stage is decoration
-// with its own label, so the chapter reads the same without it.
+// step at the middle of the screen. A step may name a scene of its own, and the stage switches to it.
+// Steps are in reading order in the page; the stage is decoration with its own label, so the chapter
+// reads the same without it.
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { type SceneName, Stage } from "./three/Stage";
 
-export type StoryStep = { key: string; title: string; body: ReactNode };
+export type StoryStep = {
+  key: string;
+  title: string;
+  body: ReactNode;
+  /** This step's own scene, at one of its steps, with its own label. */
+  scene?: { name: SceneName; step: number; label: string };
+};
 
 export function StoryChapter({
   id,
@@ -61,6 +68,7 @@ export function StoryChapter({
   }, []);
 
   useEffect(() => onStep?.(active), [active, onStep]);
+  const own = steps[active]?.scene;
 
   return (
     <section className="story" id={id} aria-labelledby={`${id}-title`}>
@@ -92,11 +100,11 @@ export function StoryChapter({
         <div className="story-stage-col">
           <div className="story-sticky">
             <Stage
-              scene={scene}
-              step={active}
+              scene={own?.name ?? scene}
+              step={own ? own.step : active}
               param={param}
               param2={param2}
-              label={label}
+              label={own?.label ?? label}
               className="story-stage"
             >
               <ol className="story-dots" aria-hidden="true">

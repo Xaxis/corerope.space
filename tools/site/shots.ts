@@ -2,7 +2,8 @@
 // adapted: corerope.space's pages, and a page's charts must render. Shots of the site's pages to look at, and what a page must pass on a phone
 // (tools/site/deploy.sh runs it on the live site; run it on a local server before a deploy): each
 // page answering 200 (or 404 for the missing page), shot whole at 1440 and at 390 px wide, light
-// and dark. At 390 px nothing may scroll sideways: the page is no wider than the window. Each is
+// and dark. At neither width may anything scroll sideways: the page is no wider than the window,
+// and at 390 px every block keeps a side gutter. Each is
 // checked by axe against WCAG 2.2 A and AA, and a serious or critical finding fails it.
 //
 //   ~/.claude/claude-core/bin/heavy node tools/site/shots.ts --url URL [--out DIR] [--only /a,/b]
@@ -74,6 +75,14 @@ try {
         const response = await page.goto(`${base}${path}`, { waitUntil: "networkidle" });
         status = response?.status() ?? 0;
         await page.evaluate(() => document.fonts.ready);
+        // At any width the page is no wider than the window (a wide table once pushed /design
+        // sideways at 1440 px while 390 px was fine).
+        const [wide, window_] = await page.evaluate(() => [
+          document.documentElement.scrollWidth,
+          document.documentElement.clientWidth,
+        ]);
+        if (width !== 390 && (wide ?? 0) > (window_ ?? width))
+          problems.push(`${path} ${label} ${scheme} scrolls sideways (${wide} px in ${window_})`);
         if (width === 390) {
           widthAt390 = Math.max(
             widthAt390,

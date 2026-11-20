@@ -2061,6 +2061,17 @@ fieldset.calc-choice legend {
 .stage-gl canvas {
   outline: none;
 }
+/* A scene fades in when it starts, so a story switching scenes reads as a cut, not a glitch. */
+@media (prefers-reduced-motion: no-preference) {
+  .stage-gl canvas {
+    animation: stage-in 0.6s ease-out;
+  }
+}
+@keyframes stage-in {
+  from {
+    opacity: 0;
+  }
+}
 .stage-fallback {
   position: absolute;
   inset: 0;

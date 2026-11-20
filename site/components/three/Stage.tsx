@@ -125,7 +125,11 @@ export function Stage({
   }, [playing, reduced]);
 
   return (
-    <div className={`stage${className ? ` ${className}` : ""}`} data-status={status}>
+    <div
+      className={`stage${className ? ` ${className}` : ""}`}
+      data-status={status}
+      data-scene={scene}
+    >
       <div className="stage-gl" ref={host} role="img" aria-label={label} />
       {status === "failed" && <div className="stage-fallback">{fallback}</div>}
       {children}

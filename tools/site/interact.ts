@@ -153,6 +153,32 @@ try {
     `${await stage1.getAttribute("data-status")}`,
   );
 
+  // A story step that names its own scene switches the stage to it.
+  const own = page.locator('#moves .story-step[data-step="1"]');
+  await own.evaluate((el) => el.scrollIntoView({ block: "center" }));
+  await page
+    .waitForFunction(
+      () => {
+        const stage = document.querySelector("#moves .stage");
+        return (
+          stage?.getAttribute("data-scene") === "cartridges" &&
+          stage.getAttribute("data-status") === "ready" &&
+          stage.querySelector("canvas") !== null
+        );
+      },
+      null,
+      { timeout: 60_000 },
+    )
+    .catch(() => {});
+  const moves = page.locator("#moves .stage");
+  check(
+    "a story step with its own scene switches the stage to it",
+    (await moves.getAttribute("data-scene")) === "cartridges" &&
+      (await moves.getAttribute("data-status")) === "ready" &&
+      (await moves.locator("canvas").count()) === 1,
+    `${await moves.getAttribute("data-scene")} ${await moves.getAttribute("data-status")}`,
+  );
+
   // A tooltip on a chart mark.
   await page.locator('[data-tip-title="Energy per task, per solved task"]').hover();
   const tip = page.locator(".tip");

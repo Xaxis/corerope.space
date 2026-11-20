@@ -28,6 +28,8 @@ export default function Home() {
   const c = decodeEnergy.coefficients;
   const ratio = c.pj_per_hbm_bit / c.pj_per_flop;
   const where = "Where the remaining 1000x hides";
+  const inv4 = section(DESIGN, "Invention 4");
+  const inv6 = section(DESIGN, "Invention 6");
   const missing = inventions().filter((x) => x.experiments.length === 0);
 
   return (
@@ -307,9 +309,95 @@ export default function Home() {
         }
       />
 
+      <StoryChapter
+        id="moves"
+        n="Chapter 5"
+        title="What still moves once the weights are wires"
+        scene="storage"
+        label="A 3D memory tier: tokens run toward a small core, the rows each one needs light up inside a 3D NAND stack, the die sums them, and one small vector crosses to the core."
+        steps={[
+          {
+            key: "lookups",
+            title: "Memory that computes where it is stored",
+            body: (
+              <>
+                <Q
+                  q={quote(
+                    DESIGN,
+                    "Invention 4",
+                    "The memory tier lives in storage that computes",
+                    2,
+                  )}
+                />
+                <p className="story-aside">
+                  In the scene: a token's addresses are known as it arrives, so the rows it needs
+                  light up before it reaches the core; the die sums them and one vector crosses.
+                </p>
+              </>
+            ),
+            scene: {
+              name: "storage",
+              step: 1,
+              label:
+                "A 3D memory tier: tokens run toward a small core, the rows each one needs light up inside a 3D NAND stack, the die sums them, and one small vector crosses to the core.",
+            },
+          },
+          {
+            key: "cartridges",
+            title: "Context loaded in one step, not re-read",
+            body: (
+              <>
+                <Q q={quote(DESIGN, "Invention 6", "Once weights stop moving", 1)} />
+                <Q
+                  q={quote(
+                    DESIGN,
+                    "Invention 6",
+                    "A cartridge is a trained, compact starting state",
+                    2,
+                  )}
+                />
+              </>
+            ),
+            scene: {
+              name: "cartridges",
+              step: 1,
+              label:
+                "A 3D frozen core ringed by the user's context state. Cartridges in a rack behind it fly to a slot one at a time, and the ring fills at once in the cartridge's colour.",
+            },
+          },
+          {
+            key: "tokens",
+            title: "Fewer tokens per solved task",
+            body: (
+              <>
+                <Q q={quote(DESIGN, "Invention 5", "Cheaper tokens get spent", 2)} />
+                <p className="story-aside">
+                  In the scene: joule-priced training prunes the costly steps (red), a stretch the
+                  fleet solves again and again becomes one compiled skill (the green block), and
+                  runs of steps become latent reasoning (blue) that must end in a short text
+                  checkpoint (white).
+                </p>
+              </>
+            ),
+            scene: {
+              name: "tokens",
+              step: 3,
+              label:
+                "A 3D chain of reasoning tokens from a task to its answer, shortened: the expensive steps pruned, a repeated stretch folded into one compiled skill block, and runs of steps turned into a blue ribbon of latent reasoning with white text checkpoints.",
+            },
+          },
+        ]}
+        foot={
+          <ChapterFoot
+            source={{ path: DESIGN, startLine: inv4.startLine, endLine: inv6.endLine }}
+            more={{ href: "/design#lookup-in-storage", label: "The three parts, in full" }}
+          />
+        }
+      />
+
       <Chapter
         id="numbers"
-        n="Chapter 5"
+        n="Chapter 6"
         title="The numbers, and how sure they are"
         lede={
           <>
@@ -332,7 +420,7 @@ export default function Home() {
 
       <Chapter
         id="tests"
-        n="Chapter 6"
+        n="Chapter 7"
         title="What would prove it wrong"
         lede={
           <Q

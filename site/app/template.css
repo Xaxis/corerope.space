@@ -165,6 +165,12 @@
 .chapter-split .chapter-body {
   margin-top: 0;
 }
+/* A table in the narrow column scrolls inside it, rather than breaking out to the long-read width
+   (.prose .table-wrap) and pushing the page sideways. */
+.chapter-split .chapter-body .table-wrap {
+  width: auto;
+  max-width: 100%;
+}
 .chapter-split .chapter-lede {
   font-size: 16.5px;
 }

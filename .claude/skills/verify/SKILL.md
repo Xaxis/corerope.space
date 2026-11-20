@@ -66,7 +66,7 @@ this run started. If the page is stale, the server is serving an older build: re
   you changed: Read them. Pages over 16,384 px tile in a full-page shot; use peek for those.
 - **One part of a page:** `heavy node tools/site/peek.ts --url http://localhost:4317 --path /survey --selector ".fig" [--scheme dark] [--width 390] [--wait 2500]` (use --wait for 3D stages; peek waits for `load`, not network idle)
   writes one PNG per matching element into out/peek/.
-- **Interactions:** `heavy node tools/site/interact.ts --url http://localhost:4317` (exit 0: 27 checks
+- **Interactions:** `heavy node tools/site/interact.ts --url http://localhost:4317` (exit 0: 28 checks
   on the calculator, presets, shared links, tabs, the 3D stages and story, scene step pickers, stage
   release, tooltips, theme, reduced motion and the phone).
 - **Stepped 3D scenes:** `heavy node tools/site/scenes.ts --url http://localhost:4317 --path /design [--only N] [--scheme dark]`

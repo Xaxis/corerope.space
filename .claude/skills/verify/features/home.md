@@ -1,7 +1,7 @@
 # Home: the story
 
 The landing page tells the whole program as one scrolling story: a full-bleed 3D core rope, the
-headline numbers, then six numbered chapters, three of them scroll-driven 3D scenes.
+headline numbers, then seven numbered chapters, four of them scroll-driven 3D scenes.
 
 <!-- covers: page:/ -->
 
@@ -17,8 +17,11 @@ headline numbers, then six numbered chapters, three of them scroll-driven 3D sce
 - chapter 3 `#wires`: StoryChapter on the `wired` scene (rails, +1/-1 vias, shared partial sums,
   zeros that cost nothing).
 - chapter 4 `#fleet`: StoryChapter on the `fleet` scene; the last step holds the Amdahl control.
-- chapter 5 `#numbers`: the multiplier budget quotes and the range chart with tooltips.
-- chapter 6 `#tests`: the seven experiments with their pass bars; counts parts with no experiment.
+- chapter 5 `#moves`: StoryChapter whose steps each name their own scene (StoryStep.scene): memory
+  that computes (`storage`, step 1), cartridges (`cartridges`, step 1), fewer tokens (`tokens`,
+  step 3). The stage switches scene with the active step (`data-scene` on `.stage`) and fades in.
+- chapter 6 `#numbers`: the multiplier budget quotes and the range chart with tooltips.
+- chapter 7 `#tests`: the seven experiments with their pass bars; counts parts with no experiment.
 - pager to /survey.
 
 ## How to reach it
@@ -39,8 +42,9 @@ heavy node tools/site/peek.ts --url http://localhost:4317 --path / --selector "m
 
 Proves it when: the three strings print; interact prints ok for "the hero's WebGL stage is
 drawing", "the pause button stops the animation", "scrolling the story activates its step", "the
-story's stage loads when it comes into view", "hovering a chart row shows its tooltip" and "with
-reduced motion the hero is a still frame". Then Read out/peek/home-0-light-1440.png (the rope is lit
+story's stage loads when it comes into view", "a story step with its own scene switches the stage
+to it", "hovering a chart row shows its tooltip" and "with reduced motion the hero is a still
+frame". Then Read out/peek/home-0-light-1440.png (the rope is lit
 right of the text, cores flash) and a story section (the stage sits beside the active step).
 
 ## Gotchas

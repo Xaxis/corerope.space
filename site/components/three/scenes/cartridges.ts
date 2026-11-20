@@ -192,7 +192,7 @@ export function build({ small }: BuildContext): Built {
   const mix = [1, 0, 0];
   const camera_ = rig(camera, [
     { pos: new THREE.Vector3(-1.4, 4.2, 7.2), look: new THREE.Vector3(-0.8, 0.2, 0) },
-    { pos: new THREE.Vector3(0.6, 4.6, 6.8), look: new THREE.Vector3(0.3, 0.2, -0.6) },
+    { pos: new THREE.Vector3(0.6, 3.8, 5.4), look: new THREE.Vector3(0.4, 0.3, -0.9) },
     { pos: new THREE.Vector3(0.2, 4.4, 7.4), look: new THREE.Vector3(0.1, 0.0, 0.6) },
   ]);
   const smooth = (x: number) => x * x * (3 - 2 * x);
@@ -214,7 +214,8 @@ export function build({ small }: BuildContext): Built {
       for (let i = 0; i < PAGES; i++) {
         const page = PAGES - 1 - i; // top first
         const lit = m0 * (page === PAGES - 1 - reading ? 1 : 0);
-        c.set("#ffffff").multiplyScalar(0.55 + 0.45 * (1 - m1 * 0.6) + lit * 5);
+        // The corpus matters only while it is re-read (step 0); otherwise it recedes.
+        c.set("#ffffff").multiplyScalar((0.9 + lit * 5) * (0.3 + 0.7 * m0));
         pages.setColorAt(i, c);
       }
       if (pages.instanceColor) pages.instanceColor.needsUpdate = true;

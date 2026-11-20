@@ -325,7 +325,8 @@ a:hover {
   margin: 0 0 12px;
   font-weight: 600;
 }
-.foot-grid ul {
+.foot-grid ul,
+.foot-grid ol {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -365,17 +366,6 @@ a:hover {
 main {
   display: block;
 }
-.page-head {
-  padding: 64px 0 40px;
-}
-.eyebrow {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin: 0 0 14px;
-}
 h1,
 .h1 {
   font-size: clamp(34px, 5.2vw, 56px);
@@ -385,15 +375,6 @@ h1,
   margin: 0;
   max-width: 22ch;
   text-wrap: balance;
-}
-.lede {
-  font-family: var(--serif);
-  font-size: clamp(19px, 2.1vw, 22px);
-  line-height: 1.5;
-  color: var(--ink-2);
-  max-width: 60ch;
-  margin: 20px 0 0;
-  text-wrap: pretty;
 }
 .crumbs {
   font-size: 14px;
@@ -530,8 +511,7 @@ h1,
   max-width: 100%;
   -webkit-overflow-scrolling: touch;
 }
-.prose .table-wrap,
-.wide .table-wrap {
+.prose .table-wrap {
   width: min(100vw - 2 * var(--gutter), 1000px);
   max-width: none;
 }
@@ -684,28 +664,6 @@ tbody tr:hover td {
 
 .stack > * + * {
   margin-top: var(--space, 24px);
-}
-.band {
-  padding: 72px 0;
-}
-.band + .band {
-  border-top: 1px solid var(--hair);
-}
-.band-title {
-  font-size: clamp(26px, 3.4vw, 36px);
-  line-height: 1.1;
-  letter-spacing: -0.028em;
-  font-weight: 660;
-  margin: 0 0 14px;
-  max-width: 26ch;
-  text-wrap: balance;
-}
-.band-lede {
-  font-family: var(--serif);
-  font-size: 19px;
-  color: var(--ink-2);
-  max-width: 62ch;
-  margin: 0 0 32px;
 }
 .with-toc {
   display: grid;
@@ -931,55 +889,8 @@ a.card:hover {
   color: var(--accent);
   font-weight: 560;
 }
-.card .num {
-  font-family: var(--mono);
-  font-size: 12.5px;
-  color: var(--accent);
-}
 
 /* Stat tiles */
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1px;
-  background: var(--hair);
-  border: 1px solid var(--hair);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-.stat {
-  background: var(--surface);
-  padding: 20px 22px;
-}
-.stat .label {
-  font-size: 13.5px;
-  color: var(--ink-2);
-  margin: 0 0 6px;
-  line-height: 1.35;
-}
-.stat .value {
-  font-size: 40px;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  font-weight: 650;
-  margin: 0;
-}
-.stat .value small {
-  font-size: 0.55em;
-  letter-spacing: 0;
-  font-weight: 560;
-  color: var(--ink-2);
-  margin-left: 2px;
-}
-.stat .foot {
-  font-size: 13px;
-  color: var(--muted);
-  margin: 8px 0 0;
-  line-height: 1.4;
-}
-.stat.accent .value {
-  color: var(--accent);
-}
 
 /* ---- Figures --------------------------------------------------------------------------------- */
 
@@ -1067,24 +978,6 @@ a.card:hover {
   align-items: center;
   gap: 7px;
 }
-.key-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex: none;
-}
-.key-line {
-  width: 16px;
-  height: 2px;
-  border-radius: 1px;
-  flex: none;
-}
-.key-dash {
-  width: 16px;
-  height: 0;
-  border-top: 2px dashed currentColor;
-  flex: none;
-}
 .key-bar {
   width: 12px;
   height: 10px;
@@ -1114,13 +1007,6 @@ a.card:hover {
   color: var(--ink);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
   font-weight: 560;
-}
-.fig-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 16px;
-  align-items: center;
-  margin-top: 14px;
 }
 
 /* Chart parts (components/charts/kit.tsx) */
@@ -1179,15 +1065,6 @@ a.card:hover {
 }
 .plot [data-tip]:focus {
   outline: none;
-}
-.plot [data-tip]:focus-visible + .focus-ring,
-.plot .hit:focus-visible {
-  stroke: var(--accent-mark);
-  stroke-width: 2;
-}
-.hit {
-  fill: transparent;
-  stroke: transparent;
 }
 .tip {
   position: absolute;
@@ -1272,9 +1149,6 @@ a.card:hover {
     padding: 8px 0 0;
   }
   .rows .axis-spacer {
-    display: none;
-  }
-  .hide-sm {
     display: none;
   }
 }
@@ -1658,257 +1532,19 @@ a.card:hover {
 }
 
 /* The core rope illustration (components/CoreRope.tsx) */
-.corerope-fig {
-  margin: 0;
-}
-.corerope-panels {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-.corerope-panel {
-  background: var(--surface);
-  border: 1px solid var(--hair);
-  border-radius: var(--radius);
-  padding: 18px 18px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.corerope-panel svg {
-  width: 100%;
-  height: auto;
-}
-.corerope-cap {
-  margin: 0;
-  font-size: 14.5px;
-  line-height: 1.5;
-  color: var(--ink-2);
-}
-.corerope-cap b {
-  color: var(--ink);
-  font-weight: 650;
-}
-.cr-bits {
-  font-family: var(--mono);
-  font-size: 15px;
-  fill: var(--ink-2);
-  letter-spacing: 0.08em;
-}
-.cr-in,
-.cr-eq {
-  font-family: var(--mono);
-  font-size: 16px;
-  fill: var(--ink);
-}
-.cr-w {
-  font-family: var(--mono);
-  font-size: 14px;
-  font-weight: 600;
-  fill: var(--accent);
-}
-.cr-sigma {
-  font-family: var(--serif);
-  font-size: 40px;
-  fill: var(--ink);
-}
-.cr-port {
-  font-family: var(--sans);
-  font-size: 17px;
-  font-weight: 600;
-  fill: var(--ink-2);
-}
-.pulse {
-  stroke-dasharray: 36 1000;
-  stroke-dashoffset: 1036;
-  animation: pulse 5.4s linear infinite;
-}
+
 @keyframes pulse {
   to {
     stroke-dashoffset: 0;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .pulse {
-    display: none;
-  }
-}
-@media (max-width: 760px) {
-  .corerope-panels {
-    grid-template-columns: 1fr;
-  }
-}
 
-/* Home */
-.hero {
-  padding: 84px 0 64px;
-  background:
-    radial-gradient(1100px 420px at 85% -10%, var(--accent-wash), transparent 70%),
-    linear-gradient(to bottom, transparent, transparent);
-}
-.hero-title {
-  font-size: clamp(38px, 6.4vw, 72px);
-  max-width: 17ch;
-  letter-spacing: -0.04em;
-  line-height: 1.02;
-}
-.hero-lede {
-  margin-top: 26px;
-  max-width: 64ch;
-}
-.lede-prose p,
-.band-prose p {
-  font-family: var(--serif);
-  font-size: clamp(18.5px, 2vw, 21px);
-  line-height: 1.55;
-  color: var(--ink-2);
-  margin: 0;
-  text-wrap: pretty;
-}
-.lede-prose strong {
-  color: var(--ink);
-  font-weight: 650;
-}
-.band-prose {
-  max-width: 66ch;
-  margin-bottom: 28px;
-}
-.hero-status {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 14px;
-  margin-top: 26px;
-}
-.hero-status-text {
-  font-size: 15px;
-  color: var(--ink-2);
-  max-width: 60ch;
-}
 .inline-prose p {
   margin: 0;
 }
-.hero .source-link {
-  margin-top: 22px;
-}
-.cards.two {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
-}
-.card-lg {
-  padding: 26px;
-  gap: 12px;
-}
-.card-lg h3 {
-  font-size: 22px;
-  letter-spacing: -0.02em;
-}
-.card-lg p {
-  font-size: 15.5px;
-}
-.card-prose p {
-  margin: 0 0 8px;
-  color: var(--ink-2);
-  font-size: 15px;
-}
-.card-prose ol {
-  margin: 0;
-  padding-left: 1.3em;
-  display: grid;
-  gap: 6px;
-  color: var(--ink-2);
-  font-size: 14.5px;
-  line-height: 1.45;
-}
-.card-prose strong {
-  font-weight: 600;
-}
-.band .stats {
-  margin-bottom: 8px;
-}
-.band .callout {
-  margin-top: 32px;
-}
-.page-source {
-  margin-top: 22px;
-}
 
 /* Section titles set by pages (the research's own headings, placed by the page) */
-.section-title {
-  font-size: clamp(26px, 3.2vw, 34px);
-  line-height: 1.12;
-  letter-spacing: -0.028em;
-  font-weight: 660;
-  margin: 72px 0 18px;
-  max-width: 28ch;
-  text-wrap: balance;
-  scroll-margin-top: 88px;
-}
-.sub-title {
-  font-size: 23px;
-  line-height: 1.22;
-  letter-spacing: -0.018em;
-  font-weight: 640;
-  margin: 56px 0 16px;
-  text-wrap: balance;
-  scroll-margin-top: 88px;
-}
-.page-body > .section,
-.page-body > .fig {
-  max-width: 900px;
-}
-.lever-section {
-  border-top: 1px solid var(--hair);
-  margin-top: 48px;
-}
-.lever-section .sub-title {
-  margin-top: 40px;
-}
-.levers {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
-  gap: 12px;
-  margin: 0 0 28px;
-}
-.lever {
-  background: var(--surface);
-  border: 1px solid var(--hair);
-  border-radius: 10px;
-  padding: 14px 16px 12px;
-  font-size: 13.5px;
-  line-height: 1.45;
-}
-.lever-name {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink-2);
-}
-.lever-gain {
-  margin: 6px 0 10px;
-  font-size: 17px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-  color: var(--ink);
-  line-height: 1.3;
-}
-.lever dl {
-  margin: 0;
-  display: grid;
-  gap: 6px;
-  border-top: 1px solid var(--hair);
-  padding-top: 10px;
-}
-.lever dt {
-  font-size: 11px;
-  font-weight: 650;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-}
-.lever dd {
-  margin: 1px 0 0;
-  color: var(--ink-2);
-}
+
 .deep-dive {
   font-size: 15px;
   color: var(--ink-2);
@@ -1916,13 +1552,6 @@ a.card:hover {
 }
 .deep-dive a {
   font-weight: 600;
-}
-.next-link {
-  margin-top: 72px;
-  max-width: 560px;
-}
-.next-link .card h3 {
-  font-size: 19px;
 }
 
 /* Experiments (components/ExperimentCard.tsx) */
@@ -2021,30 +1650,6 @@ a.card:hover {
   }
 }
 
-/* Design */
-.inventions {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
-}
-.invention-card p {
-  flex: 1;
-}
-.chip {
-  display: inline-flex;
-  align-self: flex-start;
-  margin-top: 6px;
-  font-size: 12.5px;
-  font-weight: 560;
-  padding: 4px 10px;
-  border-radius: 999px;
-}
-.chip-exp {
-  background: var(--accent-wash);
-  color: var(--accent);
-}
-.chip-todo {
-  border: 1px dashed var(--warn);
-  color: var(--warn);
-}
 .callout-more {
   margin-top: 6px;
 }
@@ -2054,9 +1659,6 @@ a.card:hover {
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   max-width: 900px;
-}
-.pager-next {
-  text-align: right;
 }
 @media (max-width: 640px) {
   .pager {
@@ -2275,12 +1877,6 @@ a.card:hover {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
-.body-text {
-  font-family: var(--serif);
-  font-size: 18px;
-  line-height: 1.6;
-  max-width: var(--measure);
-}
 @media (max-width: 980px) {
   .calc-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -2290,33 +1886,6 @@ a.card:hover {
     order: -1;
   }
 }
-table.mini {
-  margin: 6px 0 4px;
-  font-size: 13.5px;
-  border: 1px solid var(--hair);
-  border-radius: 8px;
-  border-collapse: separate;
-  border-spacing: 0;
-  overflow: hidden;
-}
-table.mini th,
-table.mini td {
-  padding: 8px 12px;
-}
-table.mini tbody th {
-  font-weight: 500;
-  background: none;
-  color: var(--ink-2);
-  white-space: normal;
-}
-table.mini td {
-  font-weight: 650;
-  color: var(--ink);
-  font-size: 15px;
-}
-table.mini tbody tr:last-child td {
-  color: var(--accent);
-}
 tr:last-child th {
   border-bottom: 0;
 }
@@ -2325,30 +1894,6 @@ tr:last-child th {
 .fig-prov a {
   display: inline-block;
   padding: 4px 0;
-}
-.page-body > .exps,
-.page-body > .callout,
-.page-body > .pager {
-  max-width: 900px;
-}
-.hero-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.72fr);
-  gap: 32px;
-  align-items: center;
-}
-.hero-rope {
-  width: 100%;
-  height: auto;
-  overflow: visible;
-}
-@media (max-width: 1080px) {
-  .hero-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .hero-rope {
-    display: none;
-  }
 }
 .calc-mini {
   display: none;
@@ -2372,12 +1917,6 @@ tr:last-child th {
     font-size: 17px;
     margin-left: 4px;
   }
-}
-table.mini {
-  width: 100%;
-}
-table.mini th {
-  white-space: normal;
 }
 
 /* Research library */
@@ -2473,12 +2012,6 @@ table.mini th {
 .note-gaps .deep-dive {
   padding-bottom: 16px;
 }
-.repro {
-  margin: 8px 0 0;
-}
-.repro .value {
-  font-size: 30px;
-}
 .rows text {
   fill: var(--muted);
   font-family: var(--sans);
@@ -2508,4 +2041,57 @@ fieldset.calc-choice {
 fieldset.calc-choice legend {
   padding: 0;
   margin-bottom: 6px;
+}
+
+/* ---- Stages: the 3D scenes (components/three) ------------------------------------------------ */
+/* Always dark, in both themes: a lit instrument panel set into the page. */
+.stage {
+  --stage: #0b0a09;
+  position: relative;
+  background: var(--stage);
+  border-radius: var(--radius);
+  overflow: hidden;
+  isolation: isolate;
+  color: #f1efe9;
+}
+.stage-gl {
+  position: absolute;
+  inset: 0;
+}
+.stage-gl canvas {
+  outline: none;
+}
+.stage-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: #c5c2b8;
+  font-size: 14px;
+}
+.stage-pause {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 3;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(11, 10, 9, 0.6);
+  color: #f1efe9;
+  font-size: 11px;
+  letter-spacing: -1px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+.stage-pause:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.stage-pause:focus-visible {
+  outline: 2px solid #f29a6b;
+  outline-offset: 2px;
 }

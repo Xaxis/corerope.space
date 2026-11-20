@@ -16,8 +16,9 @@ with every assumption as a slider, two scenarios, three presets and a shareable 
   1000x line, the Amdahl cap text, the $/M-tokens stack by term, and facts (mJ per token, tok/s).
 - url-state: ?scenario=, ?case= and any changed parameter; invalid or out-of-range values are ignored.
 - phone bar: a sticky bottom bar with the per-task answers under 980 px.
-- below: the multiplier budget chart, the assumptions table, the cost breakdown, the Amdahl curve
-  and costmodel.py itself.
+- chapters below (template, with a sticky subnav): `#budget` the multiplier budget and its range
+  chart, `#dollars` the cost breakdown, `#amdahl` the fleet WebGL scene with the Amdahl control
+  (0%, 0.05%, 0.1%, 1%, 5% on GPUs; recorded gains) and the Amdahl curve, `#code` costmodel.py.
 
 ## How to reach it
 

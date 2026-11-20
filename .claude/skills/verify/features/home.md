@@ -1,46 +1,54 @@
-# Home
+# Home: the story
 
-The landing page: the one-line claim, the headline numbers with how sure they are, the core rope
-story with its drawing, and where to go next.
+The landing page tells the whole program as one scrolling story: a full-bleed 3D core rope, the
+headline numbers, then six numbered chapters, three of them scroll-driven 3D scenes.
 
 <!-- covers: page:/ -->
 
 ## Sub-features
 
-- hero: the claim, the design doc's summary opening, a "Status: a design, not a result" pill, three
-  actions (design, cost model, research) and the decorative animated rope (aria-hidden).
-- numbers: four stat tiles (749x energy, 263x dollars, ~35x levers vs B2026, 92x at 1% GPU fallback)
-  and the multiplier range chart (dot and whisker, log axis, dashed 1000x target, tooltips).
-- name: the brief's core rope story (cut before its "Use this story" instructions) and the
-  two-panel illustration (`site/components/CoreRope.tsx`).
-- layers: the survey card with a table of B2024 and B2026 central estimates; the design card with
-  the seven parts.
-- next: six cards to the other pages and a note on where numbers come from.
+- hero: `section.hero3d` with the `corerope` WebGL scene behind the claim, the design doc's summary
+  sentence (quoted verbatim by `quote()`), the "A design, not a result" pill, two actions, a pause
+  button, and the brief's "Why Corerope" paragraph.
+- numbers: four stats (749x, 263x, ~35x levers vs B2026, 92x at 1% GPU fallback).
+- chapter 1 `#today`: a StoryChapter on the `memory` scene (HBM stacks streaming bits to a die);
+  three steps, the third turns the die into wires. Step 2 has the HBM-bit vs FLOP energy bars.
+- chapter 2 `#levers`: survey quotes, B2024/B2026 stats, the lever budget chart.
+- chapter 3 `#wires`: StoryChapter on the `wired` scene (rails, +1/-1 vias, shared partial sums,
+  zeros that cost nothing).
+- chapter 4 `#fleet`: StoryChapter on the `fleet` scene; the last step holds the Amdahl control.
+- chapter 5 `#numbers`: the multiplier budget quotes and the range chart with tooltips.
+- chapter 6 `#tests`: the seven experiments with their pass bars; counts parts with no experiment.
+- pager to /survey.
 
 ## How to reach it
 
-- http://localhost:4317/ ; the logo in the header from any page.
+- http://localhost:4317/ ; the logo in the header; "The story" first in the footer list.
 
 ## How to check it
 
-Static: `pnpm typecheck`, `pnpm lint`; the build renders it. No unit test.
+Static: `pnpm typecheck`, `pnpm lint`; the build fails if any quoted sentence left the research.
 
 Runtime:
 
 ```sh
-curl -s localhost:4317/ | grep -o 'Making a frontier-quality LLM roughly 1000x cheaper to run\|Status: a design, not a result\|Central case: 749x less energy and 263x lower cost per task' | sort -u
-heavy node tools/site/shots.ts --url http://localhost:4317 --out out/shots --only /
-heavy node tools/site/interact.ts --url http://localhost:4317   # includes the home chart tooltip
+curl -s localhost:4317/ | grep -o 'Making a frontier-quality LLM roughly 1000x cheaper to run\|A design, not a result\|Central case: 749x less energy and 263x lower cost per task' | sort -u
+heavy node tools/site/interact.ts --url http://localhost:4317
+heavy node tools/site/peek.ts --url http://localhost:4317 --path / --selector "main > section" --wait 2500
 ```
 
-Proves it when: all three strings print; shots exits 0 (no sideways scroll at 390 px, axe clean,
-light and dark); interact prints "ok   hovering a chart row shows its tooltip: 749x, 15x to 46,009x".
-Then Read out/shots/home-desktop-light.png and home-mobile-dark.png: the rope drawing shows wires
-through and around five cores, and the chart's labels do not collide.
+Proves it when: the three strings print; interact prints ok for "the hero's WebGL stage is
+drawing", "the pause button stops the animation", "scrolling the story activates its step", "the
+story's stage loads when it comes into view", "hovering a chart row shows its tooltip" and "with
+reduced motion the hero is a still frame". Then Read out/peek/home-0-light-1440.png (the rope is lit
+right of the text, cores flash) and a story section (the stage sits beside the active step).
 
 ## Gotchas
 
-- Every number here is read from data/multipliers.json, data/levers.json and data/amdahl.json. If a
-  number changes, it changed in the pipeline (`make data`), not in page.tsx.
-- The source link under the hero points at the design doc's summary lines; if the summary moves,
-  the link follows (it is computed from the markdown positions).
+- Stages load three.js lazily when they near the viewport. A full-page shot (shots.ts) shows the
+  stages below the fold dark; use peek, which scrolls each section into view and waits.
+- Story steps are picked by an IntersectionObserver on a thin band at mid-screen; a step scrolled
+  only to the top of the screen is not active yet.
+- The stage is always dark (#0b0a09), in both themes, by design.
+- Quoted research text comes from `quote(file, heading, start, n)` in site/lib/content.ts. If the
+  research changes, the build fails naming the sentence; update the start words, never the research.

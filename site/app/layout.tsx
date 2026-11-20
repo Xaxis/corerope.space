@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { THEME_SCRIPT } from "@/components/ThemeToggle";
 import { BUILD, SITE } from "@/lib/site";
 import "./globals.css";
+import "./template.css";
 
 const sans = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 const serif = Source_Serif_4({

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BUILD, SITE } from "@/lib/site";
+import { BUILD, PAGES, SITE } from "@/lib/site";
 import { Logo } from "./Logo";
 
 export function Footer() {
@@ -19,35 +19,16 @@ export function Footer() {
             </p>
           </div>
           <div>
-            <h2>The survey</h2>
-            <ul>
-              <li>
-                <Link href="/baseline">The baseline</Link>
-              </li>
-              <li>
-                <Link href="/levers">The levers</Link>
-              </li>
-              <li>
-                <Link href="/research">Research library</Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h2>The design</h2>
-            <ul>
-              <li>
-                <Link href="/design">Seven inventions</Link>
-              </li>
-              <li>
-                <Link href="/cost-model">Cost model</Link>
-              </li>
-              <li>
-                <Link href="/experiments">Experiments</Link>
-              </li>
-              <li>
-                <Link href="/risks">Risks and prior art</Link>
-              </li>
-            </ul>
+            <h2>In reading order</h2>
+            <ol className="foot-pages">
+              {PAGES.map((p) => (
+                <li key={p.href}>
+                  <Link href={p.href}>
+                    <span className="mono">{p.n}</span> {p.label}
+                  </Link>
+                </li>
+              ))}
+            </ol>
           </div>
           <div>
             <h2>The repository</h2>

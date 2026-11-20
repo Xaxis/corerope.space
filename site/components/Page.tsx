@@ -1,44 +1,4 @@
 import type { ReactNode } from "react";
-import { blobUrl, editUrl } from "@/lib/site";
-
-/** A page's title block, with the research file it is built from. */
-export function PageHead({
-  eyebrow,
-  title,
-  lede,
-  files = [],
-  children,
-}: {
-  eyebrow?: string;
-  title: ReactNode;
-  lede?: ReactNode;
-  /** Research files the page renders; each gets "View source" and "Edit on GitHub". */
-  files?: string[];
-  children?: ReactNode;
-}) {
-  return (
-    <header className="page-head">
-      {eyebrow && <p className="eyebrow">{eyebrow}</p>}
-      <h1>{title}</h1>
-      {lede && <div className="lede">{lede}</div>}
-      {children}
-      {files.length > 0 && (
-        <p className="source-link page-source">
-          <span className="source-label">Built from</span>
-          {files.map((f, i) => (
-            <span key={f}>
-              {i > 0 && <span aria-hidden="true">, </span>}
-              <a className="mono" href={blobUrl({ path: f })}>
-                {f}
-              </a>{" "}
-              (<a href={editUrl(f)}>edit</a>)
-            </span>
-          ))}
-        </p>
-      )}
-    </header>
-  );
-}
 
 const ICONS = {
   status: (

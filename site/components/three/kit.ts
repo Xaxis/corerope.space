@@ -1,0 +1,370 @@
+// The engine every 3D scene shares: one renderer per stage, bloom, a loop that runs only while the
+// stage is on screen and the tab is visible, and a still mode for readers who asked for less motion.
+// Scenes are plain three.js, built in code: no models, textures or images are loaded.
+import * as THREE from "three";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+
+export { THREE };
+
+/** What the page tells a scene: which story step it is on, and up to two free parameters. */
+export type SceneState = { step: number; param: number; param2: number };
+
+export type Frame = {
+  /** Seconds since the scene started (frozen in still mode). */
+  t: number;
+  /** Seconds since the last frame, capped; large in still mode so eased values land at once. */
+  dt: number;
+  state: SceneState;
+  /** The pointer over the stage, -1 to 1 on each axis, eased. */
+  pointer: { x: number; y: number };
+  /** How much farther the camera should stand so a scene composed for 16:10 still fits. */
+  fit: number;
+};
+
+/** Pull-back for a stage narrower than the 16:10 a scene is composed for. */
+export function fitFor(aspect: number, design = 1.6): number {
+  return aspect >= design ? 1 : Math.min(2.2, (design / aspect) ** 0.85);
+}
+
+export type Built = {
+  scene: THREE.Scene;
+  camera: THREE.PerspectiveCamera;
+  update(frame: Frame): void;
+  resize?(width: number, height: number): void;
+  dispose?(): void;
+};
+
+export type BuildContext = { width: number; height: number; small: boolean };
+export type SceneModule = { build(ctx: BuildContext): Built; bloom?: Partial<Bloom> };
+type Bloom = { strength: number; radius: number; threshold: number };
+
+export type Handle = {
+  set(state: Partial<SceneState>): void;
+  setPlaying(playing: boolean): void;
+  dispose(): void;
+};
+
+/** The stage colour, also painted by CSS behind the canvas so edges never show. */
+export const STAGE = new THREE.Color("#0b0a09");
+
+/** Eases `current` toward `target`: framerate-independent, `rate` per second. */
+export function approach(current: number, target: number, dt: number, rate = 4): number {
+  return target + (current - target) * Math.exp(-rate * dt);
+}
+
+/** A deterministic random generator, so a scene looks the same on every visit. */
+export function rng(seed: number): () => number {
+  let s = seed >>> 0;
+  return () => {
+    s = (s + 0x6d2b79f5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** A soft round sprite for points and glows, drawn once into a canvas. */
+export function glowTexture(): THREE.Texture {
+  const c = document.createElement("canvas");
+  c.width = c.height = 64;
+  const g = c.getContext("2d");
+  if (g) {
+    const r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    r.addColorStop(0, "rgba(255,255,255,1)");
+    r.addColorStop(0.25, "rgba(255,255,255,0.55)");
+    r.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = r;
+    g.fillRect(0, 0, 64, 64);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+/** Slow drifting dust, for depth. */
+export function dust(count: number, spread: THREE.Vector3, seed = 7): THREE.Points {
+  const r = rng(seed);
+  const pos = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    pos[i * 3] = (r() - 0.5) * spread.x;
+    pos[i * 3 + 1] = (r() - 0.5) * spread.y;
+    pos[i * 3 + 2] = (r() - 0.5) * spread.z;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({
+    size: 0.035,
+    map: glowTexture(),
+    color: new THREE.Color("#8a7d70"),
+    transparent: true,
+    opacity: 0.55,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  return new THREE.Points(geo, mat);
+}
+
+/**
+ * A tube that carries light: a dim conductor with pulses running along it. `uHeads` holds up to
+ * four pulse positions (0 to 1 along the tube; below 0 means none), set each frame by the scene.
+ */
+type U<T> = { value: T };
+export type PulseMaterial = THREE.ShaderMaterial & {
+  uniforms: {
+    uBase: U<THREE.Color>;
+    uHot: U<THREE.Color>;
+    uHeads: U<THREE.Vector4>;
+    uGain: U<number>;
+    uTail: U<number>;
+    uFade: U<number>;
+    uOpacity: U<number>;
+  };
+};
+export function pulseMaterial(
+  base: THREE.ColorRepresentation,
+  hot: THREE.ColorRepresentation,
+): PulseMaterial {
+  return new THREE.ShaderMaterial({
+    transparent: true,
+    uniforms: {
+      uBase: { value: new THREE.Color(base) },
+      uHot: { value: new THREE.Color(hot) },
+      uHeads: { value: new THREE.Vector4(-1, -1, -1, -1) },
+      uGain: { value: 1 },
+      uTail: { value: 16 },
+      uFade: { value: 0.05 },
+      uOpacity: { value: 1 },
+    },
+    vertexShader: /* glsl */ `
+      varying vec2 vUv;
+      varying vec3 vN;
+      varying vec3 vView;
+      void main() {
+        vUv = uv;
+        vN = normalize(normalMatrix * normal);
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vView = normalize(-mv.xyz);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uBase;
+      uniform vec3 uHot;
+      uniform vec4 uHeads;
+      uniform float uGain;
+      uniform float uTail;
+      uniform float uFade;
+      uniform float uOpacity;
+      varying vec2 vUv;
+      varying vec3 vN;
+      varying vec3 vView;
+      float pulse(float head) {
+        if (head < 0.0) return 0.0;
+        float d = vUv.x - head;
+        return d <= 0.0 ? exp(d * uTail) : exp(-d * 260.0);
+      }
+      void main() {
+        float lit = 0.35 + 0.65 * max(dot(vN, normalize(vec3(0.3, 0.8, 0.6))), 0.0);
+        float rim = pow(1.0 - max(dot(vN, vView), 0.0), 2.0);
+        float p = pulse(uHeads.x) + pulse(uHeads.y) + pulse(uHeads.z) + pulse(uHeads.w);
+        vec3 col = uBase * lit + uBase * rim * 0.6 + uHot * p * 3.2 * uGain;
+        float fade = smoothstep(0.0, uFade, vUv.x) * smoothstep(1.0, 1.0 - uFade, vUv.x);
+        gl_FragColor = vec4(col, fade * uOpacity);
+      }`,
+  }) as PulseMaterial;
+}
+
+/** A buffer attribute the scene rewrites every frame. */
+export function dynamicAttribute(geo: THREE.BufferGeometry, name: string, data: Float32Array) {
+  const attr = new THREE.BufferAttribute(data, 3);
+  attr.setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute(name, attr);
+  return attr;
+}
+
+/** Where along a tube's length (0 to 1) a curve passes closest to x. */
+export function uAtX(curve: THREE.Curve<THREE.Vector3>, x: number, samples = 1200): number {
+  let best = 0;
+  let bestD = Number.POSITIVE_INFINITY;
+  const p = new THREE.Vector3();
+  for (let i = 0; i <= samples; i++) {
+    const u = i / samples;
+    curve.getPointAt(u, p);
+    const d = Math.abs(p.x - x);
+    if (d < bestD) {
+      bestD = d;
+      best = u;
+    }
+  }
+  return best;
+}
+
+export function webglAvailable(): boolean {
+  try {
+    const c = document.createElement("canvas");
+    return !!(c.getContext("webgl2") || c.getContext("webgl"));
+  } catch {
+    return false;
+  }
+}
+
+/** Mounts a scene into `host` and runs it. Throws if WebGL is unavailable. */
+export function mount(
+  host: HTMLElement,
+  mod: SceneModule,
+  initial: SceneState,
+  opts: { still: boolean; onLost?: () => void },
+): Handle {
+  const small = host.clientWidth < 640;
+  const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    powerPreference: "high-performance",
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, small ? 1.5 : 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.setClearColor(STAGE, 1);
+  const canvas = renderer.domElement;
+  canvas.setAttribute("aria-hidden", "true");
+  canvas.style.display = "block";
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
+  host.appendChild(canvas);
+
+  let width = Math.max(1, host.clientWidth);
+  let height = Math.max(1, host.clientHeight);
+  const built = mod.build({ width, height, small });
+  built.scene.background = STAGE;
+
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(built.scene, built.camera));
+  const b: Bloom = { strength: 0.9, radius: 0.55, threshold: 0.62, ...mod.bloom };
+  const bloom = new UnrealBloomPass(
+    new THREE.Vector2(width / 2, height / 2),
+    b.strength,
+    b.radius,
+    b.threshold,
+  );
+  composer.addPass(bloom);
+  composer.addPass(new OutputPass());
+
+  const size = () => {
+    width = Math.max(1, host.clientWidth);
+    height = Math.max(1, host.clientHeight);
+    renderer.setSize(width, height, false);
+    composer.setSize(width, height);
+    bloom.resolution.set(width / 2, height / 2);
+    built.camera.aspect = width / height;
+    built.camera.updateProjectionMatrix();
+    built.resize?.(width, height);
+  };
+  size();
+
+  let state: SceneState = { ...initial };
+  const pointer = { x: 0, y: 0 };
+  const target = { x: 0, y: 0 };
+  let t = opts.still ? 2.6 : 0;
+  let last = performance.now();
+  let raf = 0;
+  let onScreen = false;
+  let playing = !opts.still;
+  let disposed = false;
+
+  const draw = (dt: number) => {
+    pointer.x = approach(pointer.x, target.x, dt, 3);
+    pointer.y = approach(pointer.y, target.y, dt, 3);
+    built.update({ t, dt, state, pointer, fit: fitFor(width / height) });
+    composer.render();
+  };
+  // Still frames: settle eased values by stepping the scene a few times at a fixed time.
+  const still = () => {
+    for (let i = 0; i < 4; i++)
+      built.update({ t, dt: 2, state, pointer, fit: fitFor(width / height) });
+    composer.render();
+  };
+  const loop = (now: number) => {
+    raf = 0;
+    if (disposed || !onScreen || !playing || document.hidden) return;
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    t += dt;
+    draw(dt);
+    raf = requestAnimationFrame(loop);
+  };
+  const kick = () => {
+    if (disposed) return;
+    if (playing && onScreen && !document.hidden && !raf) {
+      last = performance.now();
+      raf = requestAnimationFrame(loop);
+    } else if (!playing) {
+      still();
+    }
+  };
+
+  const io = new IntersectionObserver((entries) => {
+    onScreen = entries.some((e) => e.isIntersecting);
+    kick();
+  });
+  io.observe(host);
+  const ro = new ResizeObserver(() => {
+    size();
+    if (!playing) still();
+  });
+  ro.observe(host);
+  const onMove = (e: PointerEvent) => {
+    const r = host.getBoundingClientRect();
+    target.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+    target.y = ((e.clientY - r.top) / r.height) * 2 - 1;
+  };
+  const onLeave = () => {
+    target.x = 0;
+    target.y = 0;
+  };
+  host.addEventListener("pointermove", onMove);
+  host.addEventListener("pointerleave", onLeave);
+  const onVis = () => kick();
+  document.addEventListener("visibilitychange", onVis);
+  canvas.addEventListener("webglcontextlost", (e) => {
+    e.preventDefault();
+    opts.onLost?.();
+  });
+
+  still();
+
+  return {
+    set(next) {
+      state = { ...state, ...next };
+      if (!playing) still();
+    },
+    setPlaying(p) {
+      playing = p;
+      kick();
+    },
+    dispose() {
+      disposed = true;
+      if (raf) cancelAnimationFrame(raf);
+      io.disconnect();
+      ro.disconnect();
+      host.removeEventListener("pointermove", onMove);
+      host.removeEventListener("pointerleave", onLeave);
+      document.removeEventListener("visibilitychange", onVis);
+      built.dispose?.();
+      built.scene.traverse((o) => {
+        const m = o as THREE.Mesh;
+        m.geometry?.dispose();
+        const mats = Array.isArray(m.material) ? m.material : m.material ? [m.material] : [];
+        for (const x of mats) {
+          for (const v of Object.values(x)) if (v instanceof THREE.Texture) v.dispose();
+          x.dispose();
+        }
+      });
+      composer.dispose();
+      renderer.dispose();
+      canvas.remove();
+    },
+  };
+}

@@ -31,11 +31,20 @@ export function editUrl(path: string): string {
 }
 
 export const NAV = [
-  { href: "/baseline", label: "Baseline" },
-  { href: "/levers", label: "Levers" },
+  { href: "/survey", label: "Survey" },
   { href: "/design", label: "Design" },
   { href: "/cost-model", label: "Cost model" },
   { href: "/experiments", label: "Experiments" },
-  { href: "/risks", label: "Risks" },
   { href: "/research", label: "Research" },
 ] as const;
+
+/** The site in reading order, for the pager at the foot of every page. */
+export const PAGES = [
+  { href: "/", n: "01", label: "The story" },
+  { href: "/survey", n: "02", label: "The survey" },
+  { href: "/design", n: "03", label: "The design" },
+  { href: "/cost-model", n: "04", label: "The cost model" },
+  { href: "/experiments", n: "05", label: "Experiments and risks" },
+  { href: "/research", n: "06", label: "The research" },
+] as const;
+

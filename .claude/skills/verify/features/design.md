@@ -1,48 +1,49 @@
 # The design
 
-The seven parts of the Corerope stack: an overview page and one page per part, each with its
-falsification experiment or a visible TODO where the design doc has none.
+The seven parts of the Corerope stack on one page: where the remaining 1000x hides, then each part
+with its summary, how it could fail, its falsification experiment (or a visible TODO), and its
+evidence, three of them with WebGL scenes.
 
-<!-- covers: page:/design, page:/design/[slug] -->
+<!-- covers: page:/design, page:/design/:slug -->
 
 ## Sub-features
 
-- overview: the design doc's summary, a status callout ("Nothing here is proven at scale"), seven
-  part cards with chips ("Falsified by experiment N" or "TODO: no falsification experiment yet"),
-  "Where the remaining 1000x hides" with its table, the energy-per-weight ladder and the fleet diagram.
-- part pages: split-mind, wired-ternary, rom-core, lookup-in-storage, tokens-per-task,
-  context-cartridges, two-tier-fleet. Each renders its section of 02-corerope-design.md verbatim,
-  inserts its figures (wired-ternary: gates, SPW, energy ladder; tokens-per-task: tokens chart;
-  two-tier-fleet: the fleet diagram in place of the doc's [Diagram:] placeholder, and the Amdahl
-  curve), lists its experiments from data/roadmap.json, and has a prev/next pager.
-- TODOs: lookup-in-storage (invention 4) and context-cartridges (invention 6) show a TODO callout
-  instead of experiment cards.
+- intro: the design doc's title and summary, the "A design, not a result" status, stats (749x,
+  263x, parts and how many lack an experiment).
+- subnav: sticky chips for the overview and the seven parts, with the current one marked.
+- `#where`: the headroom table and the energy ladder.
+- one split chapter per part (`#split-mind`, `#wired-ternary`, `#rom-core`, `#lookup-in-storage`,
+  `#tokens-per-task`, `#context-cartridges`, `#two-tier-fleet`): the summary, a "Why it could fail"
+  style quote (RISK in site/app/design/page.tsx), the experiment cards from data/roadmap.json, and
+  the evidence: fleet, wired and corerope scenes, gate and SPW charts, tokens chart, the Amdahl
+  control with the fleet scene, and the fleet diagram.
+- TODO: invention 4 (lookup-in-storage) and 6 (context-cartridges) have no experiment; each shows
+  "TODO: no falsification experiment yet."
+- old addresses: /design/<slug> redirects (308) to /design#<slug>.
 
 ## How to reach it
 
-- http://localhost:4317/design ; header link "Design"; the part cards; each part at
-  http://localhost:4317/design/<slug> for the seven slugs above; the pager between parts.
+- http://localhost:4317/design ; header link "Design"; the pager from /survey.
+- http://localhost:4317/design/wired-ternary (redirect to the anchor).
 
 ## How to check it
 
-Static: `pnpm typecheck`, `pnpm lint`, the build (generateStaticParams makes all seven).
+Static: the build (every RISK quote must still be in the design doc).
 
 Runtime:
 
 ```sh
-for s in split-mind wired-ternary rom-core lookup-in-storage tokens-per-task context-cartridges two-tier-fleet; do
-  printf '%s %s\n' $s "$(curl -s -o /dev/null -w '%{http_code}' localhost:4317/design/$s)"; done
-curl -s localhost:4317/design/lookup-in-storage | grep -o 'TODO: no falsification experiment yet' | head -1
-curl -s localhost:4317/design/two-tier-fleet | grep -o '\[Diagram:' | wc -l   # 0: the placeholder is replaced
-heavy node tools/site/peek.ts --url http://localhost:4317 --path /design/wired-ternary --selector ".fig"
+curl -s localhost:4317/design | grep -o '<strong>TODO: no falsification experiment yet.</strong>' | wc -l     # 2 (bare text also matches the inlined RSC payload)
+curl -s localhost:4317/design | grep -o 'class="chapter chapter-split"' | wc -l           # 7
+curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' localhost:4317/design/rom-core     # 308 .../design#rom-core
+heavy node tools/site/peek.ts --url http://localhost:4317 --path /design --selector ".stage" --wait 3000
 ```
 
-Proves it when: seven 200s; the TODO string prints; the placeholder count is 0; the peek PNGs show
-the gate bars (435, 75.0, 30.8, 20.0, 26.1, 16.1) and the SPW lines.
+Proves it when: 2 TODOs, 7 part chapters, the redirect lands on the anchor, and the stage peeks
+show the fleet, wired, corerope and fleet-with-Amdahl scenes lit (not black).
 
 ## Gotchas
 
 - The part list and section prefixes are in site/lib/inventions.ts. If a heading in the design doc
-  is renamed, that page's build fails loudly (section() throws); fix the prefix, not the doc.
-- "Seven parts" is the design doc's own count; its sections give six numbered inventions plus the
-  fleet. The overview says so in a note under the cards.
+  is renamed, the build fails loudly (section() throws); fix the prefix, not the doc.
+- "Seven parts" is the design doc's own count: six numbered inventions plus the fleet.

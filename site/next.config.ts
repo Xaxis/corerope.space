@@ -29,6 +29,15 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: repoRoot,
   // The commit a deploy was built from, printed in every page's head (tools/site/deploy.sh checks it).
   env: { CORE_BUILD: process.env.CORE_BUILD?.trim() || "dev" },
+  // The first version of the site had nine pages; their links still work.
+  async redirects() {
+    return [
+      { source: "/baseline", destination: "/survey#baseline", permanent: true },
+      { source: "/levers", destination: "/survey#levers", permanent: true },
+      { source: "/risks", destination: "/experiments#risks", permanent: true },
+      { source: "/design/:slug", destination: "/design#:slug", permanent: true },
+    ];
+  },
   async headers() {
     const isDev = process.env.NODE_ENV !== "production";
     return [

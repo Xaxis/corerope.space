@@ -2,7 +2,9 @@
 // a chart or a section without a full-page shot (Chromium tiles full-page shots past 16,384 px).
 //
 //   ~/.claude/claude-core/bin/heavy node tools/site/peek.ts --url URL --path /levers \
-//     --selector ".fig" [--scheme light|dark] [--width 1440] [--out DIR]
+//     --selector ".fig" [--scheme light|dark] [--width 1440] [--wait MS] [--out DIR]
+//
+// --wait gives each element time after it scrolls into view: 3D stages load and draw lazily.
 //
 // Prints the files it wrote. Chromium stays on SwiftShader (CHROMIUM_ARGS).
 import { mkdirSync } from "node:fs";
@@ -18,6 +20,7 @@ const { values } = parseArgs({
     selector: { type: "string", default: ".fig" },
     scheme: { type: "string", default: "light" },
     width: { type: "string", default: "1440" },
+    wait: { type: "string", default: "0" },
     out: { type: "string" },
   },
 });
@@ -33,7 +36,10 @@ try {
     viewport: { width: Number(values.width), height: 900 },
     colorScheme: values.scheme === "dark" ? "dark" : "light",
   });
-  await page.goto(`${values.url.replace(/\/$/, "")}${values.path}`, { waitUntil: "networkidle" });
+  await page.goto(`${values.url.replace(/\/$/, "")}${values.path}`, {
+    waitUntil: "load",
+    timeout: 180_000,
+  });
   await page.evaluate(() => document.fonts.ready);
   await page.addStyleTag({
     content: "*, *::before, *::after { transition: none !important; animation: none !important; }",
@@ -42,7 +48,9 @@ try {
   const name = (values.path === "/" ? "home" : values.path.slice(1).replace(/\//g, "-")) || "home";
   for (const [i, el] of els.entries()) {
     const file = join(out, `${name}-${i}-${values.scheme}-${values.width}.png`);
-    await el.screenshot({ path: file });
+    await el.scrollIntoViewIfNeeded();
+    if (Number(values.wait) > 0) await page.waitForTimeout(Number(values.wait));
+    await el.screenshot({ path: file, animations: "allow" });
     console.log(file);
   }
 } finally {

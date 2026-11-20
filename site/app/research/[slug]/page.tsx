@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SectionView } from "@/components/Markdown";
-import { Callout, PageHead } from "@/components/Page";
+import { Callout } from "@/components/Page";
+import { PageIntro } from "@/components/Template";
 import { Toc } from "@/components/Toc";
 import { DOCS, docTitle, outline, summaryOf, whole, wordCount } from "@/lib/content";
 import { EVIDENCE } from "@/lib/markdown";
@@ -42,17 +43,19 @@ export default async function Doc({ params }: { params: Promise<{ slug: string }
   }));
   const minutes = Math.max(1, Math.round(wordCount(d.file) / 230));
   return (
-    <div className="wrap">
-      <PageHead
-        eyebrow={d.kind === "note" ? "Research note" : d.short}
+    <>
+      <PageIntro
+        n="06"
+        kicker={d.kind === "note" ? "Research note" : d.short}
         title={docTitle(d.file)}
+        lede={
+          <p className="crumbs">
+            <Link href="/research">The research</Link> / {d.short} · about {minutes} minutes
+          </p>
+        }
         files={[d.file]}
-      >
-        <p className="crumbs" style={{ marginTop: 18, marginBottom: 0 }}>
-          <Link href="/research">Research library</Link> / {d.short} · about {minutes} minutes
-        </p>
-      </PageHead>
-      <div className="with-toc">
+      />
+      <div className="wrap with-toc doc-body">
         <aside>
           <Toc items={items.filter((i) => i.depth === 2 || d.kind !== "note")} />
         </aside>
@@ -78,6 +81,6 @@ export default async function Doc({ params }: { params: Promise<{ slug: string }
           <SectionView section={s} slugger={new GithubSlugger()} />
         </div>
       </div>
-    </div>
+    </>
   );
 }

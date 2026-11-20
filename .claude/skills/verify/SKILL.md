@@ -45,7 +45,9 @@ Bash tool's `run_in_background` instead, and stop it with TaskStop.)
 
 Ready when: `curl -sf localhost:4317/ >/dev/null` succeeds.
 Needs: nothing. No env vars, no services. `CORE_BUILD` sets the build marker (deploy.sh passes the
-commit); without it the marker says `dev`. `pnpm dev` (port 3000) works too but is slower to shoot.
+commit); without it the marker says `dev`. Never shoot or drive `next dev`: with a headless browser
+attached it recompiles and reloads about once a second, so pages navigate away mid-check. Build and
+`next start`.
 
 ## Doctor
 
@@ -62,7 +64,7 @@ this run started. If the page is stale, the server is serving an older build: re
   (exit 0: all 20 routes answer as listed, no sideways scroll at 390 px, no serious or critical axe
   findings in light or dark). Add `--only /cost-model` for one page. Then look at the PNGs of what
   you changed: Read them. Pages over 16,384 px tile in a full-page shot; use peek for those.
-- **One part of a page:** `heavy node tools/site/peek.ts --url http://localhost:4317 --path /levers --selector ".fig" [--scheme dark] [--width 390]`
+- **One part of a page:** `heavy node tools/site/peek.ts --url http://localhost:4317 --path /survey --selector ".fig" [--scheme dark] [--width 390] [--wait 2500]` (use --wait for 3D stages; peek waits for `load`, not network idle)
   writes one PNG per matching element into out/peek/.
 - **Interactions:** `heavy node tools/site/interact.ts --url http://localhost:4317` (exit 0: 14 checks
   on the calculator, presets, shared links, tabs, tooltips, theme and phone menu).

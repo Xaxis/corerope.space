@@ -16,7 +16,7 @@ plus an index of every source cited across the files.
 
 ## How to reach it
 
-- http://localhost:4317/research ; header link "Research"; "Deep dive" links on /levers; every
+- http://localhost:4317/research ; header link "Research"; the note links on /survey's lever families; every
   "From" link in a figure's provenance line that names a note.
 
 ## How to check it

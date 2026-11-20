@@ -2,26 +2,31 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="wrap">
-      <header className="page-head">
-        <p className="eyebrow">Not found</p>
-        <h1>This wire goes around the core</h1>
-        <p className="lede">
-          There is no page at this address. The research, the design and the cost model are a click
-          away.
+    <header className="intro">
+      <div className="wrap">
+        <p className="kicker">
+          <span className="kicker-n">404</span>
+          Not found
         </p>
+        <h1 className="intro-title">This wire goes around the core</h1>
+        <div className="intro-lede">
+          <p>
+            There is no page at this address. The story, the design and the cost model are a click
+            away.
+          </p>
+        </div>
         <div className="actions">
           <Link className="btn btn-primary" href="/">
-            Home
+            The story
           </Link>
           <Link className="btn" href="/design">
             The design
           </Link>
           <Link className="btn" href="/research">
-            Research library
+            The research
           </Link>
         </div>
-      </header>
-    </div>
+      </div>
+    </header>
   );
 }

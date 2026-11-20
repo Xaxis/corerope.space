@@ -4,6 +4,7 @@
 // headings, rendered as written (components/Markdown.tsx), each with a link to the exact lines it
 // came from. If a heading a page asks for disappears, the build fails here rather than publishing a
 // page with a hole in it.
+
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import type { Heading, Root, RootContent } from "mdast";
@@ -11,6 +12,7 @@ import { toString as mdToString } from "mdast-util-to-string";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
+import { visit } from "unist-util-visit";
 
 /** The repository root. The site builds from site/, with the research beside it. */
 export const REPO_ROOT = (() => {
@@ -350,4 +352,38 @@ export function upTo(node: RootContent, phrase: string): RootContent {
     children.push(c);
   }
   throw new Error(`content: no "${phrase}" in the paragraph`);
+}
+
+export type Quote = { text: string; file: string; line: number };
+
+/**
+ * Sentences of the research as written, found by their opening words, with the line they are on.
+ * Searches every paragraph in the section (list items included); `heading` "" means the lead. Throws
+ * when the research no longer says it, so a quote on a page cannot drift from its source.
+ */
+export function quote(file: string, heading: string, start: string, sentences = 1): Quote {
+  const s = heading === "" ? lead(file) : section(file, heading);
+  const paras: { text: string; line: number }[] = [];
+  for (const n of s.nodes) {
+    visit(n, "paragraph", (p) => {
+      paras.push({ text: mdToString(p), line: p.position?.start.line ?? s.startLine });
+    });
+  }
+  for (const p of paras) {
+    const i = p.text.indexOf(start);
+    if (i < 0) continue;
+    let rest = p.text.slice(i);
+    let out = "";
+    for (let k = 0; k < sentences && rest; k++) {
+      const m = /^.*?[.!?](?=\s+[A-Z(~0-9$]|$)/s.exec(rest);
+      if (!m) {
+        out += rest;
+        break;
+      }
+      out += m[0];
+      rest = rest.slice(m[0].length);
+    }
+    return { text: out.trim(), file, line: p.line };
+  }
+  throw new Error(`content: ${file}: "${heading || "lead"}" no longer says "${start}"`);
 }

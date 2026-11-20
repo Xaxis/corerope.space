@@ -149,9 +149,9 @@
     {
       "id": "page:/baseline",
       "kind": "page",
-      "entry": "site/app/baseline/page.tsx",
+      "entry": "site/app/survey/page.tsx",
       "reach": "http://localhost:4317/baseline",
-      "area": "baseline",
+      "area": "survey",
       "tests": []
     },
     {
@@ -171,10 +171,10 @@
       "tests": []
     },
     {
-      "id": "page:/design/[slug]",
+      "id": "page:/design/:slug",
       "kind": "page",
-      "entry": "site/app/design/[slug]/page.tsx",
-      "reach": "http://localhost:4317/design/[slug]",
+      "entry": "site/app/design/page.tsx",
+      "reach": "http://localhost:4317/design/:slug",
       "area": "design",
       "tests": []
     },
@@ -197,9 +197,9 @@
     {
       "id": "page:/levers",
       "kind": "page",
-      "entry": "site/app/levers/page.tsx",
+      "entry": "site/app/survey/page.tsx",
       "reach": "http://localhost:4317/levers",
-      "area": "levers",
+      "area": "survey",
       "tests": []
     },
     {
@@ -221,9 +221,17 @@
     {
       "id": "page:/risks",
       "kind": "page",
-      "entry": "site/app/risks/page.tsx",
+      "entry": "site/app/experiments/page.tsx",
       "reach": "http://localhost:4317/risks",
-      "area": "risks",
+      "area": "experiments",
+      "tests": []
+    },
+    {
+      "id": "page:/survey",
+      "kind": "page",
+      "entry": "site/app/survey/page.tsx",
+      "reach": "http://localhost:4317/survey",
+      "area": "survey",
       "tests": []
     }
   ]

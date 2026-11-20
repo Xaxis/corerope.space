@@ -1,15 +1,5 @@
 import Link from "next/link";
-import type { Experiment } from "@/lib/inventions";
-
-const NAMES: Record<string, string> = {
-  "split-mind": "Split mind",
-  "wired-ternary": "Wired-weight ternary silicon",
-  "rom-core": "ROM core, RAM mind",
-  "lookup-in-storage": "Lookup-in-storage memory tier",
-  "tokens-per-task": "Cutting tokens per task",
-  "context-cartridges": "Context cartridges",
-  "two-tier-fleet": "The two-tier fleet",
-};
+import { type Experiment, shortName } from "@/lib/inventions";
 
 /** One row of the design's experiment table: what to run, what it tests, the bar, and what failing means. */
 export function ExperimentCard({ e, links = true }: { e: Experiment; links?: boolean }) {
@@ -41,7 +31,7 @@ export function ExperimentCard({ e, links = true }: { e: Experiment; links?: boo
             {e.inventions.map((s, i) => (
               <span key={s}>
                 {i > 0 && ", "}
-                <Link href={`/design/${s}`}>{NAMES[s] ?? s}</Link>
+                <Link href={`/design#${s}`}>{shortName(s)}</Link>
               </span>
             ))}
           </p>

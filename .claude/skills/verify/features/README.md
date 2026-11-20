@@ -24,12 +24,11 @@ machine (Vercel, with VERCEL_TOKEN from .env); run it only to ship, never as a p
 
 ## Areas
 
-- [home](home.md): the landing page: claim, headline numbers, the name story and its illustration.
-- [survey](survey.md): /baseline and /levers, the survey rendered with its charts and lever budget.
-- [design](design.md): /design and the seven part pages under /design/[slug].
-- [cost-model](cost-model.md): /cost-model, the interactive calculator and the model's charts.
-- [experiments](experiments.md): /experiments, results re-run and the seven-experiment roadmap.
-- [risks](risks.md): /risks, what could kill the design, known gaps, prior art.
+- [home](home.md): the story: the 3D core rope hero, headline numbers, six chapters, three scroll-driven 3D scenes.
+- [survey](survey.md): /survey (and the old /baseline, /levers): baselines, four terms, lever families, budget, odds.
+- [design](design.md): /design (and the old /design/<slug>): seven parts, each with its risk, test and evidence.
+- [cost-model](cost-model.md): /cost-model, the interactive calculator, the model's charts and the Amdahl control.
+- [experiments](experiments.md): /experiments (and the old /risks): results re-run, roadmap, risks, gaps, prior art.
 - [research](research.md): /research and every research file rendered whole under /research/[slug].
 - [meta](meta.md): icon, touch icon, share card, manifest, robots, sitemap, the 404 page.
 - [data](data.md): `make data`, `make synth`, `make check`: the pipeline that writes data/ and

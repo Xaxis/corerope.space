@@ -12,3 +12,6 @@ next-env.d.ts
 !.env.example
 .vercel/
 .DS_Store
+
+# Written by `next dev` (Next.js agent rules), not by this project; it breaks the no-em-dash rule.
+site/AGENTS.md

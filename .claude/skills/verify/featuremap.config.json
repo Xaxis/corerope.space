@@ -1,0 +1,12 @@
+{
+  "manual": [
+    { "kind": "job", "label": "make-data", "entry": "scripts/data/costmodel_data.py", "reach": "make data", "area": "data" },
+    { "kind": "job", "label": "make-synth", "entry": "scripts/synth.sh", "reach": "make synth", "area": "data" },
+    { "kind": "job", "label": "make-check", "entry": "scripts/check_results.py", "reach": "make check", "area": "data" },
+    { "kind": "cli", "label": "deploy", "entry": "tools/site/deploy.sh", "reach": "~/.claude/claude-core/bin/heavy tools/site/deploy.sh", "area": "deploy" },
+    { "kind": "page", "label": "/icon.svg", "entry": "site/app/icon.svg", "reach": "GET /icon.svg", "area": "meta" },
+    { "kind": "page", "label": "/_not-found", "entry": "site/app/not-found.tsx", "reach": "GET /no-such-page", "area": "meta" }
+  ],
+  "tests": ["tools/site/interact.ts", "tools/site/shots.ts", "scripts/check_results.py"],
+  "url": "http://localhost:4317"
+}

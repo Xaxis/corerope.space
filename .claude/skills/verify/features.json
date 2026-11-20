@@ -1,0 +1,230 @@
+{
+  "version": 1,
+  "generated_by": "featuremap (claude-core) - regenerate with `featuremap generate --write`; do not edit by hand",
+  "checks": [
+    {
+      "id": "check:typecheck",
+      "kind": "typecheck",
+      "run": "pnpm typecheck",
+      "script": "pnpm -r typecheck"
+    },
+    {
+      "id": "check:lint",
+      "kind": "lint",
+      "run": "pnpm lint",
+      "script": "biome check . && node tools/no-em-dash.mjs"
+    },
+    {
+      "id": "check:test",
+      "kind": "test",
+      "run": "pnpm test",
+      "script": "pnpm -r test"
+    },
+    {
+      "id": "check:build",
+      "kind": "build",
+      "run": "pnpm build",
+      "script": "pnpm --filter @corerope/site build"
+    },
+    {
+      "id": "check:make:check",
+      "kind": "verify",
+      "run": "make check",
+      "script": "(Makefile)"
+    },
+    {
+      "id": "check:make:test",
+      "kind": "test",
+      "run": "make test",
+      "script": "(Makefile)"
+    },
+    {
+      "id": "check:make:lint",
+      "kind": "lint",
+      "run": "make lint",
+      "script": "(Makefile)"
+    }
+  ],
+  "launch": [
+    {
+      "id": "launch:dev",
+      "run": "pnpm dev",
+      "script": "pnpm --filter @corerope/site dev"
+    },
+    {
+      "id": "launch:dev:site",
+      "run": "cd site && pnpm dev",
+      "script": "next dev"
+    }
+  ],
+  "features": [
+    {
+      "id": "api:GET /apple-icon",
+      "kind": "api",
+      "entry": "site/app/apple-icon.tsx",
+      "reach": "GET http://localhost:4317/apple-icon",
+      "area": "apple-icon",
+      "tests": []
+    },
+    {
+      "id": "api:GET /manifest.webmanifest",
+      "kind": "api",
+      "entry": "site/app/manifest.ts",
+      "reach": "GET http://localhost:4317/manifest.webmanifest",
+      "area": "manifest",
+      "tests": []
+    },
+    {
+      "id": "api:GET /opengraph-image",
+      "kind": "api",
+      "entry": "site/app/opengraph-image.tsx",
+      "reach": "GET http://localhost:4317/opengraph-image",
+      "area": "opengraph-image",
+      "tests": []
+    },
+    {
+      "id": "api:GET /robots.txt",
+      "kind": "api",
+      "entry": "site/app/robots.ts",
+      "reach": "GET http://localhost:4317/robots.txt",
+      "area": "robots",
+      "tests": []
+    },
+    {
+      "id": "api:GET /sitemap.xml",
+      "kind": "api",
+      "entry": "site/app/sitemap.ts",
+      "reach": "GET http://localhost:4317/sitemap.xml",
+      "area": "sitemap",
+      "tests": []
+    },
+    {
+      "id": "cli:deploy",
+      "kind": "cli",
+      "entry": "tools/site/deploy.sh",
+      "reach": "~/.claude/claude-core/bin/heavy tools/site/deploy.sh",
+      "area": "deploy",
+      "tests": []
+    },
+    {
+      "id": "job:make-check",
+      "kind": "job",
+      "entry": "scripts/check_results.py",
+      "reach": "make check",
+      "area": "data",
+      "tests": []
+    },
+    {
+      "id": "job:make-data",
+      "kind": "job",
+      "entry": "scripts/data/costmodel_data.py",
+      "reach": "make data",
+      "area": "data",
+      "tests": []
+    },
+    {
+      "id": "job:make-synth",
+      "kind": "job",
+      "entry": "scripts/synth.sh",
+      "reach": "make synth",
+      "area": "data",
+      "tests": []
+    },
+    {
+      "id": "page:/",
+      "kind": "page",
+      "entry": "site/app/page.tsx",
+      "reach": "http://localhost:4317/",
+      "area": "home",
+      "tests": []
+    },
+    {
+      "id": "page:/_not-found",
+      "kind": "page",
+      "entry": "site/app/not-found.tsx",
+      "reach": "GET /no-such-page",
+      "area": "meta",
+      "tests": []
+    },
+    {
+      "id": "page:/baseline",
+      "kind": "page",
+      "entry": "site/app/baseline/page.tsx",
+      "reach": "http://localhost:4317/baseline",
+      "area": "baseline",
+      "tests": []
+    },
+    {
+      "id": "page:/cost-model",
+      "kind": "page",
+      "entry": "site/app/cost-model/page.tsx",
+      "reach": "http://localhost:4317/cost-model",
+      "area": "cost-model",
+      "tests": []
+    },
+    {
+      "id": "page:/design",
+      "kind": "page",
+      "entry": "site/app/design/page.tsx",
+      "reach": "http://localhost:4317/design",
+      "area": "design",
+      "tests": []
+    },
+    {
+      "id": "page:/design/[slug]",
+      "kind": "page",
+      "entry": "site/app/design/[slug]/page.tsx",
+      "reach": "http://localhost:4317/design/[slug]",
+      "area": "design",
+      "tests": []
+    },
+    {
+      "id": "page:/experiments",
+      "kind": "page",
+      "entry": "site/app/experiments/page.tsx",
+      "reach": "http://localhost:4317/experiments",
+      "area": "experiments",
+      "tests": []
+    },
+    {
+      "id": "page:/icon.svg",
+      "kind": "page",
+      "entry": "site/app/icon.svg",
+      "reach": "GET /icon.svg",
+      "area": "meta",
+      "tests": []
+    },
+    {
+      "id": "page:/levers",
+      "kind": "page",
+      "entry": "site/app/levers/page.tsx",
+      "reach": "http://localhost:4317/levers",
+      "area": "levers",
+      "tests": []
+    },
+    {
+      "id": "page:/research",
+      "kind": "page",
+      "entry": "site/app/research/page.tsx",
+      "reach": "http://localhost:4317/research",
+      "area": "research",
+      "tests": []
+    },
+    {
+      "id": "page:/research/[slug]",
+      "kind": "page",
+      "entry": "site/app/research/[slug]/page.tsx",
+      "reach": "http://localhost:4317/research/[slug]",
+      "area": "research",
+      "tests": []
+    },
+    {
+      "id": "page:/risks",
+      "kind": "page",
+      "entry": "site/app/risks/page.tsx",
+      "reach": "http://localhost:4317/risks",
+      "area": "risks",
+      "tests": []
+    }
+  ]
+}

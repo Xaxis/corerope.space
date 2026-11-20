@@ -597,23 +597,24 @@
 .amdahl {
   margin-top: 22px;
 }
-.amdahl-stops {
+/* A row of labelled radio choices on the seg track: the Amdahl share and the scene steps. */
+.seg-field {
   border: 0;
   margin: 0;
   padding: 0;
   min-width: 0;
 }
-.amdahl-stops legend {
+.seg-field legend {
   padding: 0;
   margin-bottom: 8px;
   font-size: 13px;
   font-weight: 560;
   color: var(--ink-2);
 }
-.amdahl .seg {
+.seg-field .seg {
   flex-wrap: wrap;
 }
-.amdahl .seg label {
+.seg label {
   font-size: 13.5px;
   color: var(--ink-2);
   padding: 7px 12px;
@@ -621,13 +622,13 @@
   cursor: pointer;
   font-variant-numeric: tabular-nums;
 }
-.amdahl .seg label[data-on="true"] {
+.seg label[data-on="true"] {
   background: var(--surface);
   color: var(--ink);
   font-weight: 600;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
-.amdahl .seg label:has(input:focus-visible) {
+.seg label:has(input:focus-visible) {
   outline: 2px solid var(--accent-mark);
   outline-offset: 1px;
 }
@@ -656,6 +657,34 @@
 }
 .stage-wide {
   height: clamp(340px, 52vw, 560px);
+}
+
+/* A scene with a picker for its steps, and the research's words for the step shown. */
+.stage-steps .seg-field {
+  margin-top: 16px;
+}
+.seg-n {
+  display: inline-block;
+  min-width: 1.2em;
+  margin-right: 6px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.seg label[data-on="true"] .seg-n {
+  color: var(--accent);
+}
+.stage-steps-body {
+  margin-top: 14px;
+  max-width: 68ch;
+  min-height: 4.6em;
+}
+.stage-steps-body .q {
+  margin: 0;
+}
+.scene-note {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--muted);
 }
 
 /* ---- Sub-navigation for long pages ----------------------------------------------------------- */

@@ -23,7 +23,7 @@ description: Verify corerope.space (a static Next.js site rendered from research
 |---|---|---|---|
 | typecheck | `pnpm typecheck` | route types and TypeScript across site/ | passes, 2s |
 | lint | `pnpm lint` (= `make lint`) | Biome over site/ and tools/, and no em dash in any tracked file | passes, 1s |
-| test | `pnpm test` (= `make test`) | the TS cost model equals costmodel.py on every golden output (`Object.is`), presets, Amdahl cap | passes, 5 tests, 2s |
+| test | `pnpm test` (= `make test`) | the TS cost model equals costmodel.py on every golden output (`Object.is`), presets, Amdahl cap; every 3D scene builds and runs every step with finite geometry (test/scenes.test.ts) | passes, 20 tests, 5s |
 | build | `heavy pnpm build` | all 31 routes render statically from research/ and data/ | passes, about 30s |
 | make check | `heavy make check` | costmodel.py output equals RESULTS.md; SPW ratios and 15 Yosys gate counts reproduce; then `pnpm test` | passes (3 ok, none skipped once `make venv synth data` ran), about 10s |
 
@@ -66,8 +66,12 @@ this run started. If the page is stale, the server is serving an older build: re
   you changed: Read them. Pages over 16,384 px tile in a full-page shot; use peek for those.
 - **One part of a page:** `heavy node tools/site/peek.ts --url http://localhost:4317 --path /survey --selector ".fig" [--scheme dark] [--width 390] [--wait 2500]` (use --wait for 3D stages; peek waits for `load`, not network idle)
   writes one PNG per matching element into out/peek/.
-- **Interactions:** `heavy node tools/site/interact.ts --url http://localhost:4317` (exit 0: 14 checks
-  on the calculator, presets, shared links, tabs, tooltips, theme and phone menu).
+- **Interactions:** `heavy node tools/site/interact.ts --url http://localhost:4317` (exit 0: 27 checks
+  on the calculator, presets, shared links, tabs, the 3D stages and story, scene step pickers, stage
+  release, tooltips, theme, reduced motion and the phone).
+- **Stepped 3D scenes:** `heavy node tools/site/scenes.ts --url http://localhost:4317 --path /design [--only N] [--scheme dark]`
+  chooses every step of every `.stage-steps` and writes one PNG per step into out/scenes/, with
+  page errors and the live canvas count (exit 0: every step `ready`).
 - **Live site:** the same three tools with `--url https://corerope.space` (or the vercel.app domain).
 
 ## Evidence

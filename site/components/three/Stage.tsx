@@ -1,8 +1,9 @@
 "use client";
 
 // A dark stage that runs one 3D scene. three.js and the scene load only when the stage nears the
-// screen; the scene pauses off screen and in a hidden tab; a reader can pause it (WCAG 2.2.2), and
-// one who asked for less motion gets a still frame. Without WebGL the fallback is shown instead.
+// screen, and the scene is released again when it is far away; it pauses off screen and in a
+// hidden tab; a reader can pause it (WCAG 2.2.2), and one who asked for less motion gets a still
+// frame. Without WebGL the fallback is shown instead.
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { Handle } from "./kit";
 
@@ -11,6 +12,9 @@ const LOADERS = {
   memory: () => import("./scenes/memory"),
   wired: () => import("./scenes/wired"),
   fleet: () => import("./scenes/fleet"),
+  storage: () => import("./scenes/storage"),
+  tokens: () => import("./scenes/tokens"),
+  cartridges: () => import("./scenes/cartridges"),
 } as const;
 export type SceneName = keyof typeof LOADERS;
 
@@ -42,35 +46,71 @@ export function Stage({
   const [status, setStatus] = useState<"idle" | "ready" | "failed">("idle");
   const [reduced, setReduced] = useState(false);
   const [playing, setPlaying] = useState(true);
+  // Read when a released stage is rebuilt, so a reader's pause survives scrolling away and back.
+  const playingNow = useRef(playing);
+  playingNow.current = playing;
 
   useEffect(() => {
     const el = host.current;
     if (!el) return;
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     setReduced(still);
+    // A page can hold many stages; only the ones near the screen keep a WebGL context. A stage
+    // starts within 400px of the screen and is released beyond 1600px, so scrolling to and fro
+    // near one does not rebuild it.
     let cancelled = false;
+    let failed = false;
+    let wanted = false;
+    let loading = false;
     const fail = () => {
+      failed = true;
+      handle.current?.dispose();
+      handle.current = null;
       if (!cancelled) setStatus("failed");
     };
-    const io = new IntersectionObserver(
+    const start = () => {
+      wanted = true;
+      if (handle.current || loading || failed) return;
+      loading = true;
+      Promise.all([import("./kit"), LOADERS[scene]()])
+        .then(([kit, mod]) => {
+          loading = false;
+          if (cancelled || !wanted || handle.current) return;
+          if (!kit.webglAvailable()) return fail();
+          handle.current = kit.mount(el, mod, live.current, { still, onLost: fail });
+          if (!still && !playingNow.current) handle.current.setPlaying(false);
+          setStatus("ready");
+        })
+        .catch((e: unknown) => {
+          console.error(`stage "${scene}" failed to start:`, e);
+          fail();
+        });
+    };
+    const stop = () => {
+      wanted = false;
+      if (!handle.current) return;
+      handle.current.dispose();
+      handle.current = null;
+      if (!cancelled && !failed) setStatus("idle");
+    };
+    const near = new IntersectionObserver(
       (entries) => {
-        if (!entries.some((e) => e.isIntersecting)) return;
-        io.disconnect();
-        Promise.all([import("./kit"), LOADERS[scene]()])
-          .then(([kit, mod]) => {
-            if (cancelled) return;
-            if (!kit.webglAvailable()) return fail();
-            handle.current = kit.mount(el, mod, live.current, { still, onLost: fail });
-            setStatus("ready");
-          })
-          .catch(fail);
+        if (entries.some((e) => e.isIntersecting)) start();
       },
       { rootMargin: "400px 0px" },
     );
-    io.observe(el);
+    const far = new IntersectionObserver(
+      (entries) => {
+        if (entries.every((e) => !e.isIntersecting)) stop();
+      },
+      { rootMargin: "1600px 0px" },
+    );
+    near.observe(el);
+    far.observe(el);
     return () => {
       cancelled = true;
-      io.disconnect();
+      near.disconnect();
+      far.disconnect();
       handle.current?.dispose();
       handle.current = null;
     };

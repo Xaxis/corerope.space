@@ -55,6 +55,12 @@ export function approach(current: number, target: number, dt: number, rate = 4):
   return target + (current - target) * Math.exp(-rate * dt);
 }
 
+/** A repeatable pseudo-random number in [0, 1) for item k, salt s: the same every frame. */
+export function hash(k: number, s: number): number {
+  const v = Math.sin(k * 12.9898 + s * 78.233) * 43758.5453;
+  return v - Math.floor(v);
+}
+
 /** A deterministic random generator, so a scene looks the same on every visit. */
 export function rng(seed: number): () => number {
   let s = seed >>> 0;
@@ -185,6 +191,84 @@ export function dynamicAttribute(geo: THREE.BufferGeometry, name: string, data: 
   return attr;
 }
 
+/**
+ * Glowing particles the scene places each frame: call `put` for each one shown, then `flush`.
+ * Colours are premultiplied by brightness (additive blending: black is invisible).
+ */
+export function sprites(max: number, size: number) {
+  const pos = new Float32Array(max * 3);
+  const col = new Float32Array(max * 3);
+  const geo = new THREE.BufferGeometry();
+  const posAttr = dynamicAttribute(geo, "position", pos);
+  const colAttr = dynamicAttribute(geo, "color", col);
+  const points = new THREE.Points(
+    geo,
+    new THREE.PointsMaterial({
+      size,
+      map: glowTexture(),
+      vertexColors: true,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    }),
+  );
+  points.frustumCulled = false;
+  let n = 0;
+  return {
+    points,
+    put(p: THREE.Vector3, c: THREE.Color, brightness = 1) {
+      if (n >= max || brightness <= 0.002) return;
+      pos[n * 3] = p.x;
+      pos[n * 3 + 1] = p.y;
+      pos[n * 3 + 2] = p.z;
+      col[n * 3] = c.r * brightness;
+      col[n * 3 + 1] = c.g * brightness;
+      col[n * 3 + 2] = c.b * brightness;
+      n++;
+    },
+    flush() {
+      for (let i = n; i < max; i++) col[i * 3] = col[i * 3 + 1] = col[i * 3 + 2] = 0;
+      posAttr.needsUpdate = true;
+      colAttr.needsUpdate = true;
+      n = 0;
+    },
+  };
+}
+
+/**
+ * A camera that eases to one view per step, sways a little, follows the pointer, and stands back
+ * on a narrow stage (`fit`).
+ */
+export function rig(
+  camera: THREE.PerspectiveCamera,
+  views: { pos: THREE.Vector3; look: THREE.Vector3 }[],
+  rate = 1.3,
+) {
+  const first = views[0] ?? { pos: new THREE.Vector3(0, 3, 7), look: new THREE.Vector3() };
+  const pos = first.pos.clone();
+  const look = first.look.clone();
+  const back = new THREE.Vector3();
+  const ease = (v: THREE.Vector3, to: THREE.Vector3, dt: number) =>
+    v.set(
+      approach(v.x, to.x, dt, rate),
+      approach(v.y, to.y, dt, rate),
+      approach(v.z, to.z, dt, rate),
+    );
+  return (step: number, { t, dt, pointer, fit }: Frame) => {
+    const v = views[Math.max(0, Math.min(views.length - 1, step))] ?? first;
+    ease(pos, v.pos, dt);
+    ease(look, v.look, dt);
+    // Stand back along the line of sight, so a narrow stage still frames the same thing.
+    back.subVectors(pos, look).multiplyScalar(fit);
+    camera.position.set(
+      look.x + back.x + Math.sin(t * 0.1) * 0.3 + pointer.x * 0.5,
+      look.y + back.y - pointer.y * 0.3,
+      look.z + back.z,
+    );
+    camera.lookAt(look);
+  };
+}
+
 /** Where along a tube's length (0 to 1) a curve passes closest to x. */
 export function uAtX(curve: THREE.Curve<THREE.Vector3>, x: number, samples = 1200): number {
   let best = 0;
@@ -219,6 +303,10 @@ export function mount(
   opts: { still: boolean; onLost?: () => void },
 ): Handle {
   const small = host.clientWidth < 640;
+  let width = Math.max(1, host.clientWidth);
+  let height = Math.max(1, host.clientHeight);
+  // Built before the renderer, so a scene that throws while building never takes a context.
+  const built = mod.build({ width, height, small });
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
     powerPreference: "high-performance",
@@ -235,9 +323,6 @@ export function mount(
   canvas.style.height = "100%";
   host.appendChild(canvas);
 
-  let width = Math.max(1, host.clientWidth);
-  let height = Math.max(1, host.clientHeight);
-  const built = mod.build({ width, height, small });
   built.scene.background = STAGE;
 
   const composer = new EffectComposer(renderer);
@@ -330,12 +415,11 @@ export function mount(
   document.addEventListener("visibilitychange", onVis);
   canvas.addEventListener("webglcontextlost", (e) => {
     e.preventDefault();
-    opts.onLost?.();
+    // Our own dispose releases the context on purpose; only a loss the browser forced is a failure.
+    if (!disposed) opts.onLost?.();
   });
 
-  still();
-
-  return {
+  const handle: Handle = {
     set(next) {
       state = { ...state, ...next };
       if (!playing) still();
@@ -364,7 +448,18 @@ export function mount(
       });
       composer.dispose();
       renderer.dispose();
+      // Give the context back now, not at garbage collection: browsers cap live contexts (about 16)
+      // and drop the oldest when a page holds more.
+      renderer.forceContextLoss();
       canvas.remove();
     },
   };
+  // The first frame runs the scene's update; if that throws, give everything back before failing.
+  try {
+    still();
+  } catch (e) {
+    handle.dispose();
+    throw e;
+  }
+  return handle;
 }

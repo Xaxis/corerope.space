@@ -11,6 +11,7 @@ import {
 } from "@/components/figures";
 import { Markdown } from "@/components/Markdown";
 import { Callout } from "@/components/Page";
+import { StageSteps } from "@/components/StageSteps";
 import { SubNav } from "@/components/SubNav";
 import { Chapter, PageIntro, Pager, Q, researchHref } from "@/components/Template";
 import { Stage } from "@/components/three/Stage";
@@ -68,8 +69,16 @@ function after(s: Section, start: string): Section["nodes"] {
   return next ? [next] : [];
 }
 
+const PICK = "Show in the scene";
+const ILLUSTRATION = (
+  <p className="scene-note">
+    An illustration of the mechanism: the counts and lengths in the scene are not data.
+  </p>
+);
+
 function evidence(x: Invention): ReactNode {
   const s = x.section;
+  const h = x.heading;
   switch (x.slug) {
     case "split-mind":
       return (
@@ -86,10 +95,27 @@ function evidence(x: Invention): ReactNode {
     case "wired-ternary":
       return (
         <>
-          <Stage
+          <StageSteps
             scene="wired"
-            className="stage-wide"
+            legend={PICK}
             label="A 3D wired ternary layer: activations run down input rails, drop through +1 and -1 vias into plus and minus buses, and light the adders."
+            steps={[
+              {
+                key: "connection",
+                title: "A weight is a wire",
+                body: <Q q={quote(DESIGN, h, "In wired-weight silicon a weight", 2)} />,
+              },
+              {
+                key: "shared",
+                title: "Shared partial sums",
+                body: <Q q={quote(DESIGN, h, "With fixed weights, every signed combination", 1)} />,
+              },
+              {
+                key: "sparse",
+                title: "A zero costs nothing",
+                body: <Q q={quote(DESIGN, h, "A zero activation holds its wires still", 2)} />,
+              },
+            ]}
           />
           <GatesFigure />
           <SpwFigure />
@@ -107,10 +133,81 @@ function evidence(x: Invention): ReactNode {
         </>
       );
     case "lookup-in-storage":
-      return <Markdown nodes={after(s, "Two levels, split by when the address is known.")} />;
+      return (
+        <>
+          <StageSteps
+            scene="storage"
+            legend={PICK}
+            label="A 3D memory tier: tokens run along a rail toward a small core. As each one passes over a 3D NAND stack, beams drop into the stack and light the rows it will need. The rows then either cross the bus to the core one by one, or are summed on the die so that one small vector crosses. In the last step the core also makes lookups of its own into the DRAM beside it."
+            steps={[
+              {
+                key: "naive",
+                title: "Every row crosses",
+                body: (
+                  <p className="story-aside">
+                    In the scene: a token's addresses are known as it arrives, so its rows light
+                    before it reaches the core. Without help from the die, each of those rows then
+                    crosses the bus on its own.
+                  </p>
+                ),
+              },
+              {
+                key: "reduce",
+                title: "Summed on the die",
+                body: (
+                  <Q q={quote(DESIGN, h, "The memory tier lives in storage that computes", 2)} />
+                ),
+              },
+              {
+                key: "levels",
+                title: "Two levels",
+                body: (
+                  <>
+                    <Q q={quote(DESIGN, h, "Engram's deterministic addressing", 1)} />
+                    <p className="story-aside">
+                      In the scene: contextual lookups wait for the core's hidden state, then go to
+                      the DRAM beside it (blue).
+                    </p>
+                  </>
+                ),
+              },
+            ]}
+          />
+          {ILLUSTRATION}
+          <Markdown nodes={after(s, "Two levels, split by when the address is known.")} />
+        </>
+      );
     case "tokens-per-task":
       return (
         <>
+          <StageSteps
+            scene="tokens"
+            legend={PICK}
+            label="A 3D chain of reasoning tokens laid in a serpentine from the task to the answer, lit one by one as they are written. Hot red tokens are the expensive steps; joule-priced training removes them, a repeated stretch folds into one compiled skill block, and runs of steps become a continuous blue ribbon of latent reasoning with white text checkpoints."
+            steps={[
+              {
+                key: "spent",
+                title: "Cheaper tokens get spent",
+                body: <Q q={quote(DESIGN, h, "Cheaper tokens get spent", 2)} />,
+              },
+              {
+                key: "joules",
+                title: "Joule-priced RL",
+                body: <Q q={quote(DESIGN, h, "The reward is correctness minus a price", 2)} />,
+              },
+              {
+                key: "skills",
+                title: "Compiled skills",
+                body: <Q q={quote(DESIGN, h, "When the fleet solves the same sub-procedure", 1)} />,
+              },
+              {
+                key: "latent",
+                title: "Grounded latent reasoning",
+                body: <Q q={quote(DESIGN, h, "The core reasons for a few steps", 1)} />,
+              },
+            ]}
+          />
+          {ILLUSTRATION}
           <TokensFigure />
           <Markdown
             nodes={[s.nodes.find((n) => n.type === "list")].filter((n) => n !== undefined)}
@@ -119,7 +216,36 @@ function evidence(x: Invention): ReactNode {
         </>
       );
     case "context-cartridges":
-      return <Markdown nodes={after(s, "What is new here.")} className="q-prose" />;
+      return (
+        <>
+          <StageSteps
+            scene="cartridges"
+            legend={PICK}
+            label="A 3D frozen core with an ice-blue lattice, ringed by the user's context state. First a stack of corpus pages streams into the core and the ring fills slowly. Then cartridges in a rack behind the core fly to a dock one at a time, and the ring fills at once in the cartridge's colour. Last, a session walks along a timeline, leaving snapshots at chunk boundaries, and on returning resumes from the last one."
+            steps={[
+              {
+                key: "reread",
+                title: "Re-reading the corpus",
+                body: <Q q={quote(DESIGN, h, "Once weights stop moving", 1)} />,
+              },
+              {
+                key: "cartridge",
+                title: "A cartridge",
+                body: (
+                  <Q q={quote(DESIGN, h, "A cartridge is a trained, compact starting state", 2)} />
+                ),
+              },
+              {
+                key: "snapshots",
+                title: "Checkpointed prefixes",
+                body: <Q q={quote(DESIGN, h, "Agent turns reuse 85 to 99%", 2)} />,
+              },
+            ]}
+          />
+          {ILLUSTRATION}
+          <Markdown nodes={after(s, "What is new here.")} className="q-prose" />
+        </>
+      );
     case "two-tier-fleet":
       return (
         <>

@@ -196,6 +196,77 @@ try {
   );
   await calm.close();
 
+  // The design page: a stepped scene starts near the screen, its picker moves it to a step and
+  // shows the research's words for it, and a page of stages keeps only the near ones alive.
+  await page.goto(`${base}/design`, { waitUntil: "load" });
+  const storage = page.locator("#lookup-in-storage .stage-steps");
+  await storage.locator(".stage").evaluate((el) => el.scrollIntoView({ block: "center" }));
+  await page
+    .waitForFunction(
+      () =>
+        document.querySelector("#lookup-in-storage .stage")?.getAttribute("data-status") !== "idle",
+      null,
+      { timeout: 60_000 },
+    )
+    .catch(() => {});
+  check(
+    "a design-page scene starts when it comes into view",
+    (await storage.locator(".stage").getAttribute("data-status")) === "ready",
+    `${await storage.locator(".stage").getAttribute("data-status")}`,
+  );
+  await storage.getByText("Summed on the die").click();
+  const said = (await storage.locator(".stage-steps-body").textContent()) ?? "";
+  check(
+    "choosing a scene step checks it and shows the research's words for it",
+    (await storage.getByRole("radio", { name: "Summed on the die" }).isChecked()) &&
+      said.includes("storage that computes"),
+    said.slice(0, 80),
+  );
+  const stages = await page.locator(".stage").count();
+  const end = await page.evaluate(() => document.documentElement.scrollHeight);
+  let most = 0;
+  for (let y = 0; y <= end; y += 700) {
+    await page.evaluate((top) => window.scrollTo(0, top), y);
+    await page.waitForTimeout(300);
+    most = Math.max(most, await page.locator(".stage-gl canvas").count());
+  }
+  await page.waitForTimeout(500);
+  const left = await storage.locator("canvas").count();
+  check(
+    "a page of stages keeps only the ones near the screen alive",
+    most < stages &&
+      left === 0 &&
+      (await storage.locator(".stage").getAttribute("data-status")) === "idle",
+    `at most ${most} of ${stages} live; the storage stage, far behind, holds ${left}`,
+  );
+
+  // A reader's pause survives the stage being released and rebuilt.
+  const ready = (sel: string) =>
+    page
+      .waitForFunction(
+        (q) => document.querySelector(q)?.getAttribute("data-status") === "ready",
+        sel,
+        { timeout: 60_000 },
+      )
+      .catch(() => {});
+  const storageStage = "#lookup-in-storage .stage";
+  await page.locator(storageStage).evaluate((el) => el.scrollIntoView({ block: "center" }));
+  await ready(storageStage);
+  await page.locator(storageStage).getByRole("button", { name: "Pause the animation" }).click();
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(800);
+  const released = (await page.locator(`${storageStage} canvas`).count()) === 0;
+  await page.locator(storageStage).evaluate((el) => el.scrollIntoView({ block: "center" }));
+  await ready(storageStage);
+  const replay = page.locator(storageStage).getByRole("button", { name: "Play the animation" });
+  check(
+    "a paused stage is still paused when it is rebuilt",
+    released &&
+      (await replay.count()) === 1 &&
+      (await replay.getAttribute("aria-pressed")) === "true",
+    `released ${released}, play button ${await replay.count()}`,
+  );
+
   // The phone menu.
   const phone = await browser.newPage({ viewport: { width: 390, height: 844 } });
   await phone.goto(`${base}/`, { waitUntil: "networkidle" });

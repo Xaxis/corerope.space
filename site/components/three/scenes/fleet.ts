@@ -12,6 +12,7 @@ import {
   dynamicAttribute,
   type Frame,
   glowTexture,
+  hash,
   rng,
   STAGE,
   THREE,
@@ -28,11 +29,6 @@ const TIER_A = new THREE.Vector3(0, 0.2, 0);
 const TIER_B = new THREE.Vector3(2.9, 0.3, -1.6);
 const GPU = new THREE.Vector3(3.2, 0.6, 1.8);
 const SLAB_Y = -1.4;
-
-const hash = (k: number, s: number) => {
-  const v = Math.sin(k * 12.9898 + s * 78.233) * 43758.5453;
-  return v - Math.floor(v);
-};
 
 function chip(size: THREE.Vector3, body: string, edge: string, glow: number) {
   const g = new THREE.Group();

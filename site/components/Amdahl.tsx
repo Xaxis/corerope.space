@@ -27,7 +27,7 @@ export function AmdahlControl({
   const group = useId();
   return (
     <div className="amdahl">
-      <fieldset className="amdahl-stops">
+      <fieldset className="seg-field">
         <legend>Share of tasks that fall back to GPUs</legend>
         <div className="seg">
           {STOPS.map((x, i) => (

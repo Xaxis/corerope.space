@@ -176,12 +176,16 @@ try {
   );
   await page.evaluate(() => localStorage.removeItem("theme"));
 
-  // Reduced motion: the stage draws one still frame and offers no pause button.
+  // Reduced motion: the stage draws one still frame and offers no pause button. Headless pages all
+  // count as visible, so the first page's hero would keep rendering on SwiftShader beside this one
+  // and starve it on a busy machine: park it first. "load", not "networkidle": what matters is the
+  // stage's status, waited for below, not the router's prefetches finishing.
+  await page.goto("about:blank");
   const calm = await browser.newPage({
     viewport: { width: 1440, height: 900 },
     reducedMotion: "reduce",
   });
-  await calm.goto(`${base}/`, { waitUntil: "networkidle" });
+  await calm.goto(`${base}/`, { waitUntil: "load" });
   await calm
     .waitForFunction(
       () => document.querySelector(".hero3d .stage")?.getAttribute("data-status") !== "idle",
@@ -267,7 +271,8 @@ try {
     `released ${released}, play button ${await replay.count()}`,
   );
 
-  // The phone menu.
+  // The phone menu. (The design page's stages would otherwise go on drawing beside it.)
+  await page.goto("about:blank");
   const phone = await browser.newPage({ viewport: { width: 390, height: 844 } });
   await phone.goto(`${base}/`, { waitUntil: "networkidle" });
   // On a phone the stage sits on top; a step held just under it, where it can be read, is active.

@@ -42,12 +42,17 @@ heavy node tools/site/shots.ts --url http://localhost:4317 --out out/shots --onl
 Proves it when: interact prints ok for "opens on the central fabric case: 749x", "dollars per
 task, central: 263x", "no GPU fallback gives 1,196x", "the URL carries the change", "the
 pessimistic preset gives 15x", "a shared link opens its case (optimistic: 46,009x)" and "the
-new-chip scenario gives 89x dollars per task". Then Read the cost-model shots at desktop and phone.
+new-chip scenario gives 89x dollars per task", and "the calculator keeps a link's #anchor in the
+address bar". Then Read the cost-model shots at desktop and phone.
 
 ## Gotchas
 
 - The calculator is a client component; its first paint is the central case and the URL is read
   after hydration. A check right after load can see 749x before a shared link applies: wait for
   network idle and a tick (interact.ts waits 150 ms).
+- The calculator writes its case to the address bar with replaceState, keeping the #anchor, and only
+  when the address would change. Next answers every replaceState with a router transition that
+  re-renders the calculator, so an unconditional write kept the page rewriting its history 3 to 6
+  times after one click, and a test's next goto could land in the middle of it.
 - Changing costmodel.py means `make data` (regenerates data/costmodel-golden.json) and the same change
   in site/lib/costmodel.ts, or `pnpm test` fails.

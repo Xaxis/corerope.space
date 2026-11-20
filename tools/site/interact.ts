@@ -98,12 +98,62 @@ try {
     `card ${onCard}, calculator ${opened}`,
   );
 
+  // The source index's filter: every link it shows matches, every link it hides does not.
+  await page.goto(`${base}/research#sources`, { waitUntil: "load" });
+  const sourceCount = page.locator(".source-count");
+  const allSources = ((await sourceCount.textContent()) ?? "").trim();
+  // Which links a filter should keep: those whose attribute has the token (as a word, for data-docs).
+  const split = (attr: "data-q" | "data-docs", token: string) =>
+    page.locator(".source-links > li").evaluateAll(
+      (els, [a, t]) => {
+        const keep = (v: string) => (a === "data-docs" ? v.split(" ").includes(t) : v.includes(t));
+        const bad = els.filter((e) => (e as HTMLElement).hidden === keep(e.getAttribute(a) ?? ""));
+        return { shown: els.filter((e) => !(e as HTMLElement).hidden).length, bad: bad.length };
+      },
+      [attr, token] as const,
+    );
+  await page.getByRole("searchbox", { name: "Search" }).fill("arxiv");
+  await page.waitForFunction(() =>
+    document.querySelector(".source-count")?.textContent?.includes(" of "),
+  );
+  const byText = await split("data-q", "arxiv");
+  check(
+    "searching the sources shows exactly the links that match",
+    byText.bad === 0 &&
+      byText.shown > 0 &&
+      /^\d+ of \d+ links/.test((await sourceCount.textContent()) ?? ""),
+    `${byText.shown} shown, ${byText.bad} wrong; ${await sourceCount.textContent()}`,
+  );
+  await page.getByRole("searchbox", { name: "Search" }).fill("");
+  await page.getByLabel("Cited in").selectOption("corerope-design");
+  await page.waitForTimeout(100);
+  const byDoc = await split("data-docs", "corerope-design");
+  check(
+    "choosing a document shows exactly the links it cites",
+    byDoc.bad === 0 && byDoc.shown > 0,
+    `${byDoc.shown} shown, ${byDoc.bad} wrong`,
+  );
+  await page.getByRole("searchbox", { name: "Search" }).fill("no such source anywhere");
+  await page.getByRole("button", { name: "Show them all" }).click();
+  await page.waitForTimeout(100);
+  check(
+    "a search with no match offers to show them all, which restores the list",
+    ((await sourceCount.textContent()) ?? "").trim() === allSources &&
+      (await page.locator(".source-links > li[hidden]").count()) === 0,
+    `${await sourceCount.textContent()}`,
+  );
+
   // The Amdahl control beside the fleet scene: 1% on GPUs leaves 92x, as recorded.
   await page.goto(`${base}/cost-model#amdahl`, { waitUntil: "networkidle" });
   const control = page.locator(".amdahl-stage .amdahl");
   await control.locator("label", { hasText: /^1%$/ }).click();
   const gain = ((await control.locator(".amdahl-out dd").first().textContent()) ?? "").trim();
   check("the Amdahl control at 1% on GPUs shows 92x", gain === "92x", gain);
+  check(
+    "the calculator keeps a link's #anchor in the address bar",
+    new URL(page.url()).hash === "#amdahl",
+    page.url(),
+  );
   await control.locator("label", { hasText: /^0%$/ }).click();
   const ceiling = ((await control.locator(".amdahl-out dd").nth(1).textContent()) ?? "").trim();
   check("with nothing on GPUs there is no ceiling", ceiling === "none", ceiling);

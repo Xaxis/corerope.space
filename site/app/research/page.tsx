@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SourceFilter } from "@/components/SourceFilter";
 import { Chapter, PageIntro, Pager } from "@/components/Template";
-import { citations, DOCS, docTitle, summaryOf, wordCount } from "@/lib/content";
+import { DOCS, docTitle, summaryOf, wordCount } from "@/lib/content";
 import { blobUrl } from "@/lib/site";
+import { sourceSites } from "@/lib/sources";
 
 export const metadata: Metadata = {
   title: "Research library",
@@ -18,14 +20,18 @@ const KIND: Record<string, string> = {
   results: "Recorded results",
 };
 
+/** A document's short name inside a sentence: "the survey", "low-bit numerics", but "MoE and ...". */
+function inline(short: string): string {
+  const first = short.split(" ")[0] ?? "";
+  return /[A-Z]/.test(first.slice(1)) ? short : short.charAt(0).toLowerCase() + short.slice(1);
+}
+
 export default function Research() {
-  const all = DOCS.flatMap((d) => citations(d.file).map((c) => ({ ...c, doc: d })));
-  const byUrl = new Map<string, typeof all>();
-  for (const c of all) byUrl.set(c.url, [...(byUrl.get(c.url) ?? []), c]);
-  const sources = [...byUrl.entries()]
-    .map(([url, cs]) => ({ url, host: new URL(url).hostname.replace(/^www\./, ""), cs }))
-    .sort((a, b) => a.host.localeCompare(b.host) || a.url.localeCompare(b.url));
-  const hosts = [...new Set(sources.map((s) => s.host))];
+  const sites = sourceSites();
+  const links = sites.reduce((n, s) => n + s.links.length, 0);
+  const cited = new Set(
+    sites.flatMap((s) => s.links.flatMap((l) => l.where.map((w) => w.doc.slug))),
+  );
   return (
     <>
       <PageIntro
@@ -50,9 +56,9 @@ export default function Research() {
             label: "Words",
           },
           {
-            value: String(sources.length),
+            value: String(links),
             label: "Distinct sources cited",
-            note: `From ${hosts.length} sites`,
+            note: `From ${sites.length} sites`,
             tone: "accent",
           },
         ]}
@@ -82,33 +88,67 @@ export default function Research() {
         title="Every source cited"
         lede={
           <p className="q">
-            {sources.length} distinct links from {hosts.length} sites, with each place they are
-            cited. Labels in the notes say whether a figure was measured independently, claimed by a
-            vendor, or derived.
+            {links} distinct links from {sites.length} sites, each named as the research names it,
+            with every line that cites it. Labels in the notes say whether a figure was measured
+            independently, claimed by a vendor, or derived.
           </p>
         }
       >
-        <ol className="sources">
-          {sources.map((s) => (
-            <li key={s.url}>
-              <a href={s.url} rel="noopener noreferrer" className="source-url">
-                {s.cs[0]?.text || s.host}
-              </a>
-              <span className="source-host">{s.host}</span>
-              <span className="source-where">
-                Cited in{" "}
-                {[...new Map(s.cs.map((c) => [`${c.file}:${c.line}`, c])).values()].map((c, i) => (
-                  <span key={`${c.file}:${c.line}`}>
-                    {i > 0 && ", "}
-                    <a href={blobUrl({ path: c.file, startLine: c.line })}>
-                      {c.doc.short.toLowerCase()} line {c.line}
-                    </a>
-                  </span>
-                ))}
-              </span>
-            </li>
-          ))}
-        </ol>
+        <SourceFilter
+          docs={DOCS.filter((d) => cited.has(d.slug)).map((d) => ({
+            slug: d.slug,
+            short: d.short,
+          }))}
+          total={links}
+          sites={sites.length}
+        >
+          <ol className="source-sites">
+            {sites.map((s) => (
+              <li key={s.host} className="source-site" data-site>
+                <h3 className="source-site-host">
+                  {s.host}
+                  {s.links.length > 1 && <span>{s.links.length} links</span>}
+                </h3>
+                <ul className="source-links">
+                  {s.links.map((l) => (
+                    <li
+                      key={l.url}
+                      data-q={[l.name, s.host, l.path, ...l.where.map((w) => w.doc.short)]
+                        .join(" ")
+                        .toLowerCase()}
+                      data-docs={l.where.map((w) => w.doc.slug).join(" ")}
+                    >
+                      <a href={l.url} rel="noopener noreferrer" className="source-url">
+                        {l.name}
+                      </a>
+                      {l.path && <span className="source-path">{l.path}</span>}
+                      <span className="source-where">
+                        Cited in{" "}
+                        {l.where.map((w, i) => (
+                          <span key={w.doc.slug}>
+                            {i > 0 && "; "}
+                            {inline(w.doc.short)} {w.lines.length > 1 ? "lines" : "line"}{" "}
+                            {w.lines.map((n, j) => (
+                              <span key={n}>
+                                {j > 0 && ", "}
+                                <a
+                                  href={blobUrl({ path: w.doc.file, startLine: n })}
+                                  aria-label={`${w.doc.short}, line ${n}`}
+                                >
+                                  {n}
+                                </a>
+                              </span>
+                            ))}
+                          </span>
+                        ))}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ol>
+        </SourceFilter>
       </Chapter>
       <Pager current="/research" />
     </>

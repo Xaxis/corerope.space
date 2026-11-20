@@ -68,7 +68,7 @@ function toUrl(scenario: Scenario, base: number, params: Params, presets: Preset
   const preset = presets[scenario][base];
   for (const k of KEYS) if (preset && params[k] !== preset[k]) q.set(k, String(params[k]));
   const s = q.toString();
-  return `${window.location.pathname}${s ? `?${s}` : ""}`;
+  return `${window.location.pathname}${s ? `?${s}` : ""}${window.location.hash}`;
 }
 
 /** A small log meter: where a multiplier sits between 1x and 100,000x, against the 1000x target. */
@@ -126,8 +126,14 @@ export function Calculator({ presets }: { presets: Presets }) {
     setReady(true);
   }, [presets]);
 
+  // Keep the address bar on the case shown, and its #anchor. Write only when the address changes:
+  // Next answers every replaceState with a router transition, which re-renders this component, so
+  // writing an address it already has kept the page rewriting its own history after it loaded.
   useEffect(() => {
-    if (ready) window.history.replaceState(null, "", toUrl(scenario, base, params, presets));
+    if (!ready) return;
+    const want = toUrl(scenario, base, params, presets);
+    const { pathname, search, hash } = window.location;
+    if (want !== `${pathname}${search}${hash}`) window.history.replaceState(null, "", want);
   }, [ready, scenario, base, params, presets]);
 
   const r = useMemo(() => run(params), [params]);

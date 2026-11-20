@@ -1,0 +1,86 @@
+{
+  "provenance": {
+    "script": "scripts/data/research_tables.py",
+    "sources": [
+      "research/01-report-path-to-1000x.md"
+    ],
+    "about": "How fast the price of a fixed capability falls, per the survey's market-trend table, and the arithmetic that follows: how much each rate has delivered since mid-2024 (rate to the power 2.4 years) and how many years it takes to reach 1000x (log 1000 / log rate). Derived."
+  },
+  "table": {
+    "line": 15,
+    "header": [
+      "Estimate",
+      "Rate at constant capability",
+      "Window and scope",
+      "Source type"
+    ],
+    "rows": [
+      [
+        "Epoch, \"Plunging price of thought\" (Sep 2026)",
+        "~47% per quarter, **~13x/yr** (math 16-19x, games 7-10x)",
+        "2023 to 2026, five benchmarks",
+        "Independent analyst"
+      ],
+      [
+        "Epoch, same report, at SOTA",
+        "~75x/yr when a level first becomes SOTA, slowing to ~4.7x/yr two years later",
+        "Same",
+        "Independent analyst"
+      ],
+      [
+        "Gundlach et al., \"Price of Progress\" (Nov 2025)",
+        "Frontier 5-10x/yr; GPQA Pareto 5.32x; open-weight 4.60x; **~3x/yr algorithmic after removing hardware**",
+        "Apr 2024 to late 2025",
+        "Academic (MIT/Epoch data)"
+      ],
+      [
+        "a16z \"LLMflation\" (Nov 2024)",
+        "~10x/yr; 1000x in 3 years at MMLU ≥42",
+        "2021 to 2024",
+        "Investor analysis"
+      ],
+      [
+        "Densing law (Tsinghua)",
+        "Capability per parameter doubles every ~3.3-3.5 months",
+        "Feb 2023 to Apr 2025, open base models",
+        "Academic"
+      ]
+    ]
+  },
+  "start": "mid-2024",
+  "years_to_nov_2026": 2.4,
+  "rates": [
+    {
+      "key": "epoch",
+      "label": "Epoch, constant capability",
+      "per_year": 13.0,
+      "line": 17,
+      "years_to_1000x": 2.6931351525078693,
+      "by_nov_2026": 471.48083666525537
+    },
+    {
+      "key": "a16z",
+      "label": "a16z, LLMflation",
+      "per_year": 10.0,
+      "line": 20,
+      "years_to_1000x": 2.9999999999999996,
+      "by_nov_2026": 251.18864315095797
+    },
+    {
+      "key": "open",
+      "label": "Open-weight Pareto (Gundlach)",
+      "per_year": 4.6,
+      "line": 19,
+      "years_to_1000x": 4.526540248326131,
+      "by_nov_2026": 38.959986348955404
+    },
+    {
+      "key": "algo",
+      "label": "Algorithmic only, hardware removed (Gundlach)",
+      "per_year": 3.0,
+      "line": 19,
+      "years_to_1000x": 6.287709822868153,
+      "by_nov_2026": 13.966610165238235
+    }
+  ]
+}

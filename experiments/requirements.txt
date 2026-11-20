@@ -1,0 +1,2 @@
+numpy==2.5.5
+yowasp-yosys==0.71.0.0.post1285

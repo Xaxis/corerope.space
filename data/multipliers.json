@@ -1,0 +1,45 @@
+{
+  "provenance": {
+    "script": "scripts/data/costmodel_data.py",
+    "sources": [
+      "experiments/cost-model/costmodel.py",
+      "research/02-corerope-design.md"
+    ],
+    "about": "How many times less energy and money the Corerope stack spends than the B2026 baseline (DeepSeek-V4-Pro-class on GB300 NVL72), per solved task and per token, in the pessimistic, central and optimistic cases of the via-programmed fabric scenario."
+  },
+  "target": 1000,
+  "rows": [
+    {
+      "key": "energy_task",
+      "label": "Energy per task",
+      "per": "task",
+      "low": 15.244274250591477,
+      "central": 748.6476130059614,
+      "high": 46008.74166091556
+    },
+    {
+      "key": "dollars_task",
+      "label": "Dollars per task",
+      "per": "task",
+      "low": 1.9473341181823207,
+      "central": 263.0998801959136,
+      "high": 10532.807191357544
+    },
+    {
+      "key": "energy_token",
+      "label": "Energy per token",
+      "per": "token",
+      "low": 26.709401709401707,
+      "central": 801.2820512820512,
+      "high": 11502.18541522889
+    },
+    {
+      "key": "dollars_token",
+      "label": "Dollars per token",
+      "per": "token",
+      "low": 2.949222379110228,
+      "central": 202.8772745910913,
+      "high": 2633.201797839386
+    }
+  ]
+}

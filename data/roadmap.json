@@ -1,0 +1,82 @@
+{
+  "provenance": {
+    "script": "scripts/data/research_tables.py",
+    "sources": [
+      "research/02-corerope-design.md"
+    ],
+    "about": "The seven experiments that would confirm or kill the Corerope design, cheapest decisive ones first, each with what it tests, its pass bar and what follows if it fails."
+  },
+  "line": 171,
+  "experiments": [
+    {
+      "order": 1,
+      "experiment": "Post-layout energy of a 1024 x 1024 wired ternary tile with shared sums, driven by real activation traces, in a 5nm-class flow",
+      "tests": "Invention 2's 0.1 pJ per weight-operation",
+      "pass_bar": "At most 0.15 pJ including wiring and leakage",
+      "if_it_fails": "Above 0.5 pJ, wired silicon is only a speed play, as Taalas's cost figures suggest; drop to stored-weight ASICs",
+      "inventions": [
+        "wired-ternary"
+      ]
+    },
+    {
+      "order": 2,
+      "experiment": "Hard-task share: run a frontier agentic and reasoning suite through 8 to 15B models with retrieval, then 60B models",
+      "tests": "The Amdahl section's 5% and 0.05% shares",
+      "pass_bar": "Tier A solves at least 90%; fewer than 0.1% need more than Tier B",
+      "if_it_fails": "The two-tier fleet caps at ~20 to 50x; redesign Tier B larger",
+      "inventions": [
+        "two-tier-fleet"
+      ]
+    },
+    {
+      "order": 3,
+      "experiment": "Inference-priced allocation law: cores of 0.5 to 3B with memory tiers 0 to 100x their size",
+      "tests": "Invention 1, and where Engram's U-curve moves when memory is priced at its inference cost",
+      "pass_bar": "A 3B core plus memory matches a model with 3x its active compute on knowledge, within 2 points on math and code",
+      "if_it_fails": "Knowledge and reasoning do not separate; the core must grow, and the central case drifts toward the pessimistic one",
+      "inventions": [
+        "split-mind"
+      ]
+    },
+    {
+      "order": 4,
+      "experiment": "Native ternary training at 3 to 8B with dReLU-style activation sparsity",
+      "tests": "Event-driven gain and the precision penalty",
+      "pass_bar": "Within 1.5% loss of FP8 at equal compute, at least 70% zero activations, under 1.2x longer reasoning",
+      "if_it_fails": "Fall back to 2 to 3-bit wired weights at ~2x the gates",
+      "inventions": [
+        "wired-ternary"
+      ]
+    },
+    {
+      "order": 5,
+      "experiment": "Freeze regret: freeze a 1 to 3B core, update only memory and adapters over 12 months of time-sliced data",
+      "tests": "Invention 3",
+      "pass_bar": "Under 1 point behind a retrained model at 12 months",
+      "if_it_fails": "Chip life shortens and NRE per token rises in proportion",
+      "inventions": [
+        "rom-core"
+      ]
+    },
+    {
+      "order": 6,
+      "experiment": "Joule-priced RL on an open reasoning model, scored per solved task",
+      "tests": "Invention 5",
+      "pass_bar": "At least 2x fewer tokens per solved task at 1 point or less",
+      "if_it_fails": "Tokens per task becomes the pessimistic 1.5x inflation",
+      "inventions": [
+        "tokens-per-task"
+      ]
+    },
+    {
+      "order": 7,
+      "experiment": "Via-programmed fabric: foundry quote and a routing study for choosing 1 of ~40 sum wires per input with one via layer",
+      "tests": "The $3M NRE assumption",
+      "pass_bar": "One-layer customization at under 2x area",
+      "if_it_fails": "NRE returns to ~$40M; dollars fall back to ~90x per task",
+      "inventions": [
+        "wired-ternary"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "provenance": {
+    "script": "scripts/data/spw.py",
+    "sources": [
+      "experiments/spw-model/adds.py",
+      "experiments/RESULTS.md"
+    ],
+    "about": "How many times fewer adds a hardwired ternary layer needs when every signed combination of a group of g inputs is built once and shared by all output rows (shared partial-sum wiring), against adding each row's inputs directly. Random ternary weights, 40% zeros. An add-count model, not a synthesis."
+  },
+  "source": "adds.py, re-run",
+  "matches_recorded": true,
+  "layers": [
+    {
+      "inputs": 48,
+      "outputs": 64,
+      "points": [
+        {
+          "group": 1,
+          "saving": 1.0
+        },
+        {
+          "group": 3,
+          "saving": 1.6
+        },
+        {
+          "group": 4,
+          "saving": 1.42
+        },
+        {
+          "group": 5,
+          "saving": 1.24
+        },
+        {
+          "group": 6,
+          "saving": 1.06
+        },
+        {
+          "group": 7,
+          "saving": 1.19
+        },
+        {
+          "group": 8,
+          "saving": 1.01
+        }
+      ]
+    },
+    {
+      "inputs": 48,
+      "outputs": 256,
+      "points": [
+        {
+          "group": 1,
+          "saving": 1.0
+        },
+        {
+          "group": 3,
+          "saving": 1.86
+        },
+        {
+          "group": 4,
+          "saving": 2.02
+        },
+        {
+          "group": 5,
+          "saving": 1.71
+        },
+        {
+          "group": 6,
+          "saving": 1.27
+        },
+        {
+          "group": 7,
+          "saving": 1.24
+        },
+        {
+          "group": 8,
+          "saving": 1.03
+        }
+      ]
+    },
+    {
+      "inputs": 1024,
+      "outputs": 1024,
+      "points": [
+        {
+          "group": 1,
+          "saving": 1.0
+        },
+        {
+          "group": 3,
+          "saving": 1.9
+        },
+        {
+          "group": 4,
+          "saving": 2.31
+        },
+        {
+          "group": 5,
+          "saving": 2.38
+        },
+        {
+          "group": 6,
+          "saving": 1.86
+        },
+        {
+          "group": 7,
+          "saving": 1.35
+        },
+        {
+          "group": 8,
+          "saving": 1.12
+        }
+      ]
+    },
+    {
+      "inputs": 4096,
+      "outputs": 4096,
+      "points": [
+        {
+          "group": 1,
+          "saving": 1.0
+        },
+        {
+          "group": 3,
+          "saving": 1.92
+        },
+        {
+          "group": 4,
+          "saving": 2.42
+        },
+        {
+          "group": 5,
+          "saving": 2.84
+        },
+        {
+          "group": 6,
+          "saving": 2.85
+        },
+        {
+          "group": 7,
+          "saving": 2.19
+        }
+      ]
+    }
+  ]
+}

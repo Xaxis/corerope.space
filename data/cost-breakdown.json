@@ -1,0 +1,101 @@
+{
+  "provenance": {
+    "script": "scripts/data/costmodel_data.py",
+    "sources": [
+      "experiments/cost-model/costmodel.py"
+    ],
+    "about": "Dollars per million tokens on the wired fleet, split into the terms run() adds: capital, electricity and memory-tier storage (each times the Tier A/Tier B mix), plus per-model NRE. Via-programmed fabric scenario."
+  },
+  "cases": {
+    "low": {
+      "total_usd_per_Mtok": 0.0406886916530871,
+      "wired_mix": 1.5,
+      "terms": [
+        {
+          "key": "capital",
+          "label": "Capital (core sets over their life)",
+          "usd": 0.037660691653087094,
+          "share": 0.9255812886337852
+        },
+        {
+          "key": "nre",
+          "label": "Per-model NRE (masks, design, verification)",
+          "usd": 0.002,
+          "share": 0.0491537063185038
+        },
+        {
+          "key": "memory",
+          "label": "Memory-tier storage",
+          "usd": 0.00030000000000000003,
+          "share": 0.007373055947775571
+        },
+        {
+          "key": "electricity",
+          "label": "Electricity",
+          "usd": 0.0007280000000000001,
+          "share": 0.017891949099935387
+        }
+      ]
+    },
+    "central": {
+      "total_usd_per_Mtok": 0.0005914905956907478,
+      "wired_mix": 1.2,
+      "terms": [
+        {
+          "key": "capital",
+          "label": "Capital (core sets over their life)",
+          "usd": 0.00039543726235741444,
+          "share": 0.6685436171569549
+        },
+        {
+          "key": "nre",
+          "label": "Per-model NRE (masks, design, verification)",
+          "usd": 0.0001,
+          "share": 0.1690643954925761
+        },
+        {
+          "key": "memory",
+          "label": "Memory-tier storage",
+          "usd": 6e-05,
+          "share": 0.10143863729554566
+        },
+        {
+          "key": "electricity",
+          "label": "Electricity",
+          "usd": 3.6053333333333336e-05,
+          "share": 0.06095335005492344
+        }
+      ]
+    },
+    "high": {
+      "total_usd_per_Mtok": 4.557189657794677e-05,
+      "wired_mix": 1.08,
+      "terms": [
+        {
+          "key": "capital",
+          "label": "Capital (core sets over their life)",
+          "usd": 1.049429657794677e-05,
+          "share": 0.2302800051342429
+        },
+        {
+          "key": "nre",
+          "label": "Per-model NRE (masks, design, verification)",
+          "usd": 9.999999999999999e-06,
+          "share": 0.21943348315328212
+        },
+        {
+          "key": "memory",
+          "label": "Memory-tier storage",
+          "usd": 2.1600000000000003e-05,
+          "share": 0.47397632361108955
+        },
+        {
+          "key": "electricity",
+          "label": "Electricity",
+          "usd": 3.4776000000000004e-06,
+          "share": 0.07631018810138541
+        }
+      ]
+    }
+  }
+}

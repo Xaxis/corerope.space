@@ -1,0 +1,401 @@
+{
+  "provenance": {
+    "script": "scripts/data/costmodel_data.py",
+    "sources": [
+      "experiments/cost-model/costmodel.py"
+    ],
+    "about": "The cost model's assumptions (S) and its results in the two scenarios costmodel.py prints: as written (per-model NRE $150M/$40M/$10M, GPU fallback 1%/0.1%/0%) and with the via-programmed fabric (NRE $20M/$3M/$1M, GPU fallback 1%/0.05%/0%). The site's presets are the fabric scenario."
+  },
+  "cases": [
+    {
+      "key": "low",
+      "label": "Pessimistic"
+    },
+    {
+      "key": "central",
+      "label": "Central"
+    },
+    {
+      "key": "high",
+      "label": "Optimistic"
+    }
+  ],
+  "params": [
+    {
+      "key": "base_J_per_tok",
+      "comment": "",
+      "as_written": [
+        0.5,
+        1.0,
+        2.0
+      ],
+      "fabric": [
+        0.5,
+        1.0,
+        2.0
+      ]
+    },
+    {
+      "key": "base_usd_per_Mtok",
+      "comment": "",
+      "as_written": [
+        0.12,
+        0.12,
+        0.12
+      ],
+      "fabric": [
+        0.12,
+        0.12,
+        0.12
+      ]
+    },
+    {
+      "key": "core_active_B",
+      "comment": "wired ternary reasoning core, billions of weights",
+      "as_written": [
+        24,
+        12,
+        8
+      ],
+      "fabric": [
+        24,
+        12,
+        8
+      ]
+    },
+    {
+      "key": "pJ_per_weight_op",
+      "comment": "wired ternary + shared partial sums, incl. wiring",
+      "as_written": [
+        0.3,
+        0.1,
+        0.03
+      ],
+      "fabric": [
+        0.3,
+        0.1,
+        0.03
+      ]
+    },
+    {
+      "key": "act_sparsity_gain",
+      "comment": "event-driven: zero activations do not toggle fanout",
+      "as_written": [
+        1.0,
+        2.0,
+        4.0
+      ],
+      "fabric": [
+        1.0,
+        2.0,
+        4.0
+      ]
+    },
+    {
+      "key": "data_mJ_per_tok",
+      "comment": "recurrent state + sparse global attn + memory-tier lookups",
+      "as_written": [
+        0.6,
+        0.2,
+        0.08
+      ],
+      "fabric": [
+        0.6,
+        0.2,
+        0.08
+      ]
+    },
+    {
+      "key": "overhead_mult",
+      "comment": "leakage, I/O, control, sampling",
+      "as_written": [
+        1.6,
+        1.3,
+        1.15
+      ],
+      "fabric": [
+        1.6,
+        1.3,
+        1.15
+      ]
+    },
+    {
+      "key": "tok_ratio",
+      "comment": "new tokens per task / baseline tokens per task",
+      "as_written": [
+        1.5,
+        0.67,
+        0.25
+      ],
+      "fabric": [
+        1.5,
+        0.67,
+        0.25
+      ]
+    },
+    {
+      "key": "deep_share",
+      "comment": "tasks escalated to a 5x larger wired deep core",
+      "as_written": [
+        0.1,
+        0.05,
+        0.02
+      ],
+      "fabric": [
+        0.1,
+        0.05,
+        0.02
+      ]
+    },
+    {
+      "key": "deep_cost_ratio",
+      "comment": "",
+      "as_written": [
+        6,
+        5,
+        5
+      ],
+      "fabric": [
+        6,
+        5,
+        5
+      ]
+    },
+    {
+      "key": "gpu_share",
+      "comment": "tasks that still fall back to B2026-class GPUs",
+      "as_written": [
+        0.01,
+        0.001,
+        0.0
+      ],
+      "fabric": [
+        0.01,
+        0.0005,
+        0.0
+      ]
+    },
+    {
+      "key": "set_capex_usd",
+      "comment": "one core set: dies + package + HBM for state",
+      "as_written": [
+        40000.0,
+        15000.0,
+        8000.0
+      ],
+      "fabric": [
+        40000.0,
+        15000.0,
+        8000.0
+      ]
+    },
+    {
+      "key": "set_power_W",
+      "comment": "",
+      "as_written": [
+        600,
+        1000,
+        2000
+      ],
+      "fabric": [
+        600,
+        1000,
+        2000
+      ]
+    },
+    {
+      "key": "utilization",
+      "comment": "",
+      "as_written": [
+        0.35,
+        0.5,
+        0.7
+      ],
+      "fabric": [
+        0.35,
+        0.5,
+        0.7
+      ]
+    },
+    {
+      "key": "life_years",
+      "comment": "",
+      "as_written": [
+        3,
+        3,
+        3
+      ],
+      "fabric": [
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "key": "usd_per_kWh",
+      "comment": "",
+      "as_written": [
+        0.1,
+        0.08,
+        0.06
+      ],
+      "fabric": [
+        0.1,
+        0.08,
+        0.06
+      ]
+    },
+    {
+      "key": "pue",
+      "comment": "",
+      "as_written": [
+        1.4,
+        1.3,
+        1.2
+      ],
+      "fabric": [
+        1.4,
+        1.3,
+        1.2
+      ]
+    },
+    {
+      "key": "nre_usd",
+      "comment": "per frozen-core generation (masks + design + verification)",
+      "as_written": [
+        150000000.0,
+        40000000.0,
+        10000000.0
+      ],
+      "fabric": [
+        20000000.0,
+        3000000.0,
+        1000000.0
+      ]
+    },
+    {
+      "key": "life_tokens",
+      "comment": "tokens served by one frozen core generation",
+      "as_written": [
+        1e+16,
+        3e+16,
+        1e+17
+      ],
+      "fabric": [
+        1e+16,
+        3e+16,
+        1e+17
+      ]
+    },
+    {
+      "key": "memtier_usd_per_Mtok",
+      "comment": "",
+      "as_written": [
+        0.0002,
+        5e-05,
+        2e-05
+      ],
+      "fabric": [
+        0.0002,
+        5e-05,
+        2e-05
+      ]
+    }
+  ],
+  "scenarios": {
+    "as_written": {
+      "low": {
+        "core_mJ": 7.2,
+        "tok_mJ": 12.48,
+        "tok_per_s_per_set": 48076.92307692307,
+        "usd_per_Mtok": {
+          "capex": 0.02510712776872473,
+          "energy": 0.00048533333333333344,
+          "nre": 0.015,
+          "total": 0.053688691653087095
+        },
+        "energy_x_per_token": 26.709401709401707,
+        "usd_x_per_token": 2.23510754881843,
+        "energy_x_per_task": 15.244274250591477,
+        "usd_x_per_task": 1.482804892081659
+      },
+      "central": {
+        "core_mJ": 0.6,
+        "tok_mJ": 1.04,
+        "tok_per_s_per_set": 961538.4615384614,
+        "usd_per_Mtok": {
+          "capex": 0.00032953105196451205,
+          "energy": 3.0044444444444446e-05,
+          "nre": 0.0013333333333333333,
+          "total": 0.001824823929024081
+        },
+        "energy_x_per_token": 801.2820512820512,
+        "usd_x_per_token": 65.75976897901388,
+        "energy_x_per_task": 544.8629708858355,
+        "usd_x_per_task": 89.45814749992971
+      },
+      "high": {
+        "core_mJ": 0.060000000000000005,
+        "tok_mJ": 0.161,
+        "tok_per_s_per_set": 12422360.248447204,
+        "usd_per_Mtok": {
+          "capex": 9.716941275876638e-06,
+          "energy": 3.22e-06,
+          "nre": 0.0001,
+          "total": 0.00013557189657794678
+        },
+        "energy_x_per_token": 11502.18541522889,
+        "usd_x_per_token": 885.1391994136944,
+        "energy_x_per_task": 46008.74166091556,
+        "usd_x_per_task": 3540.5567976547777
+      }
+    },
+    "fabric": {
+      "low": {
+        "core_mJ": 7.2,
+        "tok_mJ": 12.48,
+        "tok_per_s_per_set": 48076.92307692307,
+        "usd_per_Mtok": {
+          "capex": 0.02510712776872473,
+          "energy": 0.00048533333333333344,
+          "nre": 0.002,
+          "total": 0.0406886916530871
+        },
+        "energy_x_per_token": 26.709401709401707,
+        "usd_x_per_token": 2.949222379110228,
+        "energy_x_per_task": 15.244274250591477,
+        "usd_x_per_task": 1.9473341181823207
+      },
+      "central": {
+        "core_mJ": 0.6,
+        "tok_mJ": 1.04,
+        "tok_per_s_per_set": 961538.4615384614,
+        "usd_per_Mtok": {
+          "capex": 0.00032953105196451205,
+          "energy": 3.0044444444444446e-05,
+          "nre": 0.0001,
+          "total": 0.0005914905956907478
+        },
+        "energy_x_per_token": 801.2820512820512,
+        "usd_x_per_token": 202.8772745910913,
+        "energy_x_per_task": 748.6476130059614,
+        "usd_x_per_task": 263.0998801959136
+      },
+      "high": {
+        "core_mJ": 0.060000000000000005,
+        "tok_mJ": 0.161,
+        "tok_per_s_per_set": 12422360.248447204,
+        "usd_per_Mtok": {
+          "capex": 9.716941275876638e-06,
+          "energy": 3.22e-06,
+          "nre": 9.999999999999999e-06,
+          "total": 4.557189657794677e-05
+        },
+        "energy_x_per_token": 11502.18541522889,
+        "usd_x_per_token": 2633.201797839386,
+        "energy_x_per_task": 46008.74166091556,
+        "usd_x_per_task": 10532.807191357544
+      }
+    }
+  }
+}

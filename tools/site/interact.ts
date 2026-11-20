@@ -79,6 +79,25 @@ try {
     await tile(page, "Lower cost per solved task"),
   );
 
+  // An experiment's failure case opens the calculator on that case, with the number its card shows.
+  await page.goto(`${base}/experiments#experiment-7`, { waitUntil: "load" });
+  const onCard = (await page.locator("#experiment-7 .exp-model b").nth(1).textContent()) ?? "";
+  await page
+    .locator("#experiment-7 .exp-model")
+    .getByRole("link", { name: "Open this case" })
+    .click();
+  await page.waitForURL(/\/cost-model\?scenario=as_written/);
+  await page.waitForFunction(() => document.querySelector(".calc-tile-value") !== null, null, {
+    timeout: 30_000,
+  });
+  await page.waitForTimeout(150);
+  const opened = await tile(page, "Lower cost per solved task");
+  check(
+    "an experiment's failure case opens the calculator showing the same number",
+    onCard === opened && opened === "89x",
+    `card ${onCard}, calculator ${opened}`,
+  );
+
   // The Amdahl control beside the fleet scene: 1% on GPUs leaves 92x, as recorded.
   await page.goto(`${base}/cost-model#amdahl`, { waitUntil: "networkidle" });
   const control = page.locator(".amdahl-stage .amdahl");

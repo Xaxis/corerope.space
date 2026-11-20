@@ -2,7 +2,7 @@
 // every step and parameter without throwing, keep every vertex and the camera finite, and (for a
 // scene with steps) put the camera somewhere else for its last step than for its first. A scene bug
 // here otherwise shows only as a dark stage in a browser.
-import * as THREE from "three";
+import type * as THREE from "three";
 import { beforeAll, describe, expect, it } from "vitest";
 import type { Frame, SceneModule } from "@/components/three/kit";
 

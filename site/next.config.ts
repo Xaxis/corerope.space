@@ -7,14 +7,15 @@ const repoRoot = path.join(import.meta.dirname, "..");
 
 // Every page is static and the site takes no input, so the policy is strict about where things load
 // from. Next.js inlines its hydration data as scripts, which a static page cannot give a nonce, so
-// scripts allow 'unsafe-inline' from this origin only. Nothing is loaded from anywhere else.
+// scripts allow 'unsafe-inline' from this origin. The one other origin is Overlook, which counts
+// visits (its s.js, and the hits it sends back); see OVERLOOK_SITE in lib/site.ts.
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' https://overlook.technology",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",
-  "connect-src 'self'",
+  "connect-src 'self' https://overlook.technology",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

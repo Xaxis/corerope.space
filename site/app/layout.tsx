@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Source_Serif_4 } from "next/font/google";
+import Script from "next/script";
 import type { ReactNode } from "react";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { THEME_SCRIPT } from "@/components/ThemeToggle";
-import { BUILD, SITE } from "@/lib/site";
+import { BUILD, OVERLOOK_SITE, SITE } from "@/lib/site";
 import "./globals.css";
 import "./template.css";
 
@@ -54,6 +55,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Header />
         <main id="main">{children}</main>
         <Footer />
+        <Script
+          src="https://overlook.technology/s.js"
+          data-site={OVERLOOK_SITE}
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

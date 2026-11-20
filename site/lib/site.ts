@@ -48,3 +48,9 @@ export const PAGES = [
   { href: "/research", n: "06", label: "The research" },
 ] as const;
 
+/**
+ * Overlook (overlook.technology) counts this site's visitors: no cookies, nothing stored in the
+ * visitor's browser, localhost and automated browsers never counted. The key is public; Overlook
+ * minted it for the hostname corerope.space (its seed entry "corerope").
+ */
+export const OVERLOOK_SITE = "ws_5tfmvy5l32";

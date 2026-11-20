@@ -119,6 +119,15 @@ if [[ $check_only == 0 ]]; then
   echo "deployed: ${deployment:-unknown}"
 fi
 
+# The browser checks come from the same commit as the site they prove. Run from the working tree,
+# an uncommitted edit to a check (this session's or another's) was tested against a site without
+# it, and failed a good deploy. The archive borrows the checkout's node_modules (after the upload).
+tools="$root/tools/site"
+if [[ $check_only == 0 ]]; then
+  ln -s "$root/node_modules" "$work/src/node_modules"
+  tools="$work/src/tools/site"
+fi
+
 # --- prove it ---------------------------------------------------------------------------------
 # The production domains are what people visit. Per-deployment URLs sit behind Vercel's
 # deployment protection, so they prove nothing about the public site.
@@ -201,7 +210,7 @@ for domain in "${live[@]}"; do
 
   # Shots to look at: every page at desktop and phone width, light and dark, whole.
   name="${domain//./-}"
-  if ! node "$root/tools/site/shots.ts" --url "$url" --out "$shots/$name" \
+  if ! node "$tools/shots.ts" --url "$url" --out "$shots/$name" \
     >"$work/shots.log" 2>"$work/shots.err"; then
     cat "$work/shots.err" >&2
     fail "the pages' shots on $url (tools/site/shots.ts; shots in $shots/$name)"
@@ -209,7 +218,7 @@ for domain in "${live[@]}"; do
   echo "  ok  every page answers as it should, no sideways scroll at 390 px, axe clean; shots in $shots/$name"
   checks=$((checks + 1))
 
-  if ! node "$root/tools/site/interact.ts" --url "$url" >"$work/interact.log" 2>&1; then
+  if ! node "$tools/interact.ts" --url "$url" >"$work/interact.log" 2>&1; then
     cat "$work/interact.log" >&2
     fail "the interactive checks on $url (tools/site/interact.ts)"
   fi

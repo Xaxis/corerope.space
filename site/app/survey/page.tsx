@@ -139,9 +139,12 @@ export default function Survey() {
       >
         <div className="families">
           {levers.sections.map((s, i) => {
-            const [name, verdict] = s.heading.split(/:\s*/, 2);
             const rows = levers.levers.filter((l) => l.section === s.key);
             const note = docByFile(s.note);
+            // "Name: verdict". A heading that is all verdict takes its note's name as the title.
+            const colon = s.heading.indexOf(": ");
+            const name = colon >= 0 ? s.heading.slice(0, colon) : (note?.short ?? s.heading);
+            const verdict = colon >= 0 ? s.heading.slice(colon + 2) : note ? s.heading : null;
             return (
               <article key={s.key} className="family">
                 <p className="family-n">{String(i + 1).padStart(2, "0")}</p>

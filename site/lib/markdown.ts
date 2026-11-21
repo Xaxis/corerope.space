@@ -63,10 +63,10 @@ const ANY_EVIDENCE = new RegExp(EVIDENCE.map((e) => e.pattern.source).join("|"),
  * parenthesized group. */
 const POWER = /(?<=[\w)])\^(\([^()]*\)|\d+(?:\.\d+)?|[A-Za-z_]\w*)/g;
 /** What must not break across lines: an arrow ("->"), a range or a hyphenated name with a number
- * ("55-82%", "2.45-11.53", "GLM-5"), a command-line flag ("-noabc"), and a number with its unit
- * ("815 mm2"). */
+ * ("55-82%", "2.45-11.53", "GLM-5"), a command-line flag ("-noabc"), a number with its unit
+ * ("815 mm2", "4.25 bits/param"), and a number with the sign before it ("≈ 0.0048"). */
 const GLUE =
-  /->|[\w.$~-]*\w-\d[\w.%-]*|(?<=^|\s)-[a-z][\w-]*|\d[\d,.]* (?:mm2|mm|nm|[KMGTP]i?B|[mµunpf]?J|[mkMG]?W|[mµun]?s|[KMG]?Hz)\b/g;
+  /->|[\w.$~-]*\w-\d[\w.%-]*|(?<=^|\s)-[a-z][\w-]*|\d[\d,.]* (?:mm2|mm|nm|[KMGTP]i?B|[mµunpf]?J|[mkMG]?W|[mµun]?s|[KMG]?Hz|bits?(?:\/\w+)?)\b|[=≈] [~$]?\d(?:[\d.,]*\d)?/g;
 
 /** Notes' structural headings and what their sections hold. */
 const KINDS: Record<string, { kind: string; label: string }> = {

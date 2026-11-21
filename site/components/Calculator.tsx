@@ -353,7 +353,7 @@ export function Calculator({ presets }: { presets: Presets }) {
               <div>
                 <dt>Baseline (B2026)</dt>
                 <dd>
-                  {params.base_J_per_tok} J and ${params.base_usd_per_Mtok} per M tokens
+                  {`${params.base_J_per_tok}\u00a0J and $${params.base_usd_per_Mtok} per\u00a0M\u00a0tokens`}
                 </dd>
               </div>
             </dl>

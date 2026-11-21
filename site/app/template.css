@@ -899,6 +899,10 @@
   letter-spacing: -0.012em;
   font-weight: 640;
 }
+/* The survey's words after the colon, which some headings start in lower case. */
+.family-verdict::first-letter {
+  text-transform: uppercase;
+}
 .family-verdict {
   margin: 6px 0 0;
   font-size: 15px;

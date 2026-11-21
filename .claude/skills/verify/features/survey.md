@@ -43,5 +43,6 @@ the families' rows legible and the HBM scene lit.
 ## Gotchas
 
 - Every lever's "Evidence" value is the survey's own label (vendor, independent, derived). Keep it.
-- The family verdict is the text after the colon in the survey's heading; a heading without one
-  shows the name only.
+- The family verdict is the text after the colon in the survey's heading, its first letter set in
+  capitals by CSS only. A heading without a colon is all verdict: the card takes its note's short
+  name as the title ("MoE and conditional compute") and the whole heading as the verdict.

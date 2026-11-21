@@ -48,8 +48,18 @@ describe("research renderer", () => {
   });
 
   it("keeps ranges, hyphenated names with numbers, flags and units on one line", () => {
-    const html = render("gpt-oss-120b scores 55-82% at 815 mm2; run -noabc; A -> B.");
-    for (const token of ["gpt-oss-120b", "55-82%", "815 mm2", "-noabc", "-&gt;"])
+    const html = render(
+      "gpt-oss-120b scores 55-82% at 815 mm2 and 4.25 bits/param; run -noabc; A -> B; A ≈ 0.0048.",
+    );
+    for (const token of [
+      "gpt-oss-120b",
+      "55-82%",
+      "815 mm2",
+      "4.25 bits/param",
+      "-noabc",
+      "-&gt;",
+      "≈ 0.0048",
+    ])
       expect(html).toContain(`<span class="nowrap">${token}</span>`);
   });
 

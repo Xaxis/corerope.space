@@ -10,16 +10,13 @@ import {
 import { SubNav } from "@/components/SubNav";
 import { Chapter, PageIntro, Pager, Q, researchHref } from "@/components/Template";
 import { Stage } from "@/components/three/Stage";
-import { docByFile, docTitle, quote, section } from "@/lib/content";
-import { levers, marketTrend } from "@/lib/data";
+import { docByFile, docTitle, quote, SURVEY, section, sourceOf } from "@/lib/content";
+import { levers, leverTotal, marketTrend } from "@/lib/data";
 import { times } from "@/lib/scale";
-
-const SURVEY = "research/01-report-path-to-1000x.md";
 
 export const metadata: Metadata = {
   title: "The survey",
-  description:
-    "Every known LLM inference efficiency lever as of November 2026, measured against two baselines: why 1000x is mostly the market trend against 2024, and why the known levers give about 35x against the late-2026 frontier.",
+  description: `Every known LLM inference efficiency lever as of November 2026, measured against two baselines: why 1000x is mostly the market trend against 2024, and why the known levers give about ${times(leverTotal("b2026", "cost"))} against the late-2026 frontier.`,
   alternates: { canonical: "/survey" },
 };
 
@@ -31,16 +28,11 @@ const CHAPTERS = [
   { id: "odds", heading: "Honest odds", text: "Honest odds" },
 ] as const;
 
-function src(heading: string) {
-  const s = section(SURVEY, heading);
-  return { path: SURVEY, startLine: s.startLine, endLine: s.endLine };
-}
+const src = (heading: string) => sourceOf(section(SURVEY, heading));
 
 export default function Survey() {
-  const total = (b: "b2024" | "b2026", what: string) =>
-    levers.budgets[b].rows.find((r) => r.kind === "total" && !r.naive && r.label.includes(what))
-      ?.central;
-  const rates = marketTrend.rates.map((r) => r.by_nov_2026);
+  // The market's own range: the algorithmic-only rate has hardware removed, so it is not a price.
+  const rates = marketTrend.rates.filter((r) => r.key !== "algo").map((r) => r.by_nov_2026);
   const title = (h: string) => section(SURVEY, h).title;
 
   return (
@@ -55,14 +47,14 @@ export default function Survey() {
         files={[SURVEY]}
         stats={[
           {
-            value: `~${times(total("b2024", "cost") ?? 0)}`,
+            value: `~${times(leverTotal("b2024", "cost"))}`,
             label: "Known levers, against 2024",
-            note: `In dollars per solved task; ~${times(total("b2024", "energy") ?? 0)} in energy`,
+            note: `In dollars per solved task; ~${times(leverTotal("b2024", "energy"))} in energy`,
           },
           {
-            value: `~${times(total("b2026", "cost") ?? 0)}`,
+            value: `~${times(leverTotal("b2026", "cost"))}`,
             label: "Known levers, against late 2026",
-            note: `In dollars per solved task; ~${times(total("b2026", "energy") ?? 0)} in energy`,
+            note: `In dollars per solved task; ~${times(leverTotal("b2026", "energy"))} in energy`,
             tone: "accent",
           },
           {
@@ -184,7 +176,9 @@ export default function Survey() {
                 <p className="family-links">
                   <Link href={researchHref(SURVEY, s.heading)}>The section</Link>
                   {note && (
-                    <Link href={`/research/${note.slug}`}>The {note.short.toLowerCase()} note</Link>
+                    <Link href={`/research/${note.slug}`}>
+                      The note on {sentenceCase(note.short)}
+                    </Link>
                   )}
                 </p>
               </article>
@@ -233,4 +227,10 @@ export default function Survey() {
       <Pager current="/survey" />
     </>
   );
+}
+
+/** A title as it reads mid-sentence: the first word lowercased unless it is an acronym ("MoE"). */
+function sentenceCase(title: string): string {
+  const first = title.split(/[\s-]/, 1)[0] ?? "";
+  return /^[A-Z][a-z]*$/.test(first) ? title.charAt(0).toLowerCase() + title.slice(1) : title;
 }

@@ -1,7 +1,15 @@
 // Every figure on the site: a chart in its frame, with its numbers as a table, the data file and
 // script that produced them, and the research lines they come from.
 import { Fragment } from "react";
-import { section } from "@/lib/content";
+import {
+  aroundPlaceholder,
+  DESIGN,
+  RESULTS,
+  readRepo,
+  SURVEY,
+  section,
+  sourceOf,
+} from "@/lib/content";
 import {
   amdahl,
   costBreakdown,
@@ -13,20 +21,26 @@ import {
   spw,
   tokensPerTask,
 } from "@/lib/data";
+import { wireExperiment } from "@/lib/inventions";
+import { central, millions } from "@/lib/presets";
 import { fmt, percent, tickLabel, times } from "@/lib/scale";
+import { TARGET } from "@/lib/site";
 import { BarRows, StackBar } from "./charts/Bars";
 import { DataTable, Figure } from "./charts/Figure";
 import { AmdahlPlot, BatchPlot, SpwPlot } from "./charts/plots";
 import { type RangeRow, RangeRows } from "./charts/RangeRows";
 import { Tabs } from "./Tabs";
 
-const DESIGN = "research/02-corerope-design.md";
-const SURVEY = "research/01-report-path-to-1000x.md";
-const RESULTS = "experiments/RESULTS.md";
+/** A value the research or a data file states, found by a pattern; the build fails if it drifts. */
+function stated(text: string, re: RegExp, what: string): string {
+  const m = re.exec(text);
+  if (!m?.[1]) throw new Error(`figures: the source no longer says ${what}`);
+  return m[1];
+}
 
 const from = (file: string, prefix: string, label?: string) => {
   const s = section(file, prefix);
-  return { path: file, startLine: s.startLine, endLine: s.endLine, label: label ?? s.title };
+  return { ...sourceOf(s), label: label ?? s.title };
 };
 
 const row = (key: string) => {
@@ -37,7 +51,7 @@ const row = (key: string) => {
 
 /* 1. The headline: multipliers per task and per token -------------------------------------- */
 
-export function MultiplierFigure({ id }: { id?: string }) {
+export function MultiplierFigure() {
   const et = row("energy_task");
   const dt = row("dollars_task");
   const rows: RangeRow[] = multipliers.rows.map((r) => ({
@@ -54,7 +68,6 @@ export function MultiplierFigure({ id }: { id?: string }) {
   }));
   return (
     <Figure
-      id={id}
       title={`Central case: ${times(et.central)} less energy and ${times(dt.central)} lower cost per task`}
       subtitle="How many times cheaper the Corerope stack would be than a late-2026 frontier deployment (B2026), from its cost model. The dot is the central case; the whisker runs from the pessimistic to the optimistic case."
       data={{ file: "data/multipliers.json", provenance: multipliers.provenance }}
@@ -85,13 +98,12 @@ export function MultiplierFigure({ id }: { id?: string }) {
 
 /* 3. The Amdahl trap ------------------------------------------------------------------------ */
 
-export function AmdahlFigure({ id }: { id?: string }) {
+export function AmdahlFigure() {
   const zero = amdahl.curve.find((p) => p.share === 0);
   const fabricAt = (s: number) =>
     amdahl.curve.find((p) => Math.abs(p.share - s) < 1e-12)?.dollars_x_fabric;
   return (
     <Figure
-      id={id}
       title="Every task that falls back to GPUs pulls the gain toward 1/share"
       subtitle="The cost model's central case, run at each GPU fallback share. A share f at baseline cost caps the gain per task at 1/f, however cheap the rest becomes."
       data={{ file: "data/amdahl.json", provenance: amdahl.provenance }}
@@ -100,8 +112,9 @@ export function AmdahlFigure({ id }: { id?: string }) {
         zero && (
           <>
             With no fallback at all: {times(zero.energy_x)} less energy,{" "}
-            {times(zero.dollars_x_fabric)} lower cost with a $3M per-model NRE, and{" "}
-            {times(zero.dollars_x_asic)} with $40M.
+            {times(zero.dollars_x_fabric)} lower cost with a {millions(central.fabric.nre_usd)}{" "}
+            per-model NRE, and {times(zero.dollars_x_asic)} with{" "}
+            {millions(central.as_written.nre_usd)}.
           </>
         )
       }
@@ -111,8 +124,8 @@ export function AmdahlFigure({ id }: { id?: string }) {
           head={[
             "Share on GPUs",
             "Energy per task",
-            "Dollars, $3M NRE",
-            "Dollars, $40M NRE (as recorded)",
+            `Dollars, ${millions(central.fabric.nre_usd)} NRE`,
+            `Dollars, ${millions(central.as_written.nre_usd)} NRE (as recorded)`,
           ]}
           rows={amdahl.recorded.map((r) => [
             percent(r.share),
@@ -130,11 +143,29 @@ export function AmdahlFigure({ id }: { id?: string }) {
 
 /* 2. The fleet ------------------------------------------------------------------------------ */
 
-export function FleetDiagram({ id }: { id?: string }) {
+/** The design's own drawing of the fleet, read from its [Diagram: ...] placeholder. */
+function fleetSpec() {
+  const spec = aroundPlaceholder(section(DESIGN, "The Amdahl trap"))?.placeholder ?? "";
+  const grab = (re: RegExp, what: string) => stated(spec, re, `in its fleet diagram, ${what}`);
+  return {
+    a: grab(/Tier A: (\d+B) wired core/, "Tier A: <n>B wired core"),
+    aShare: grab(/Tier A: \d+B wired core \((~\d+%) of tasks/, "Tier A's share of tasks"),
+    aEnergy: grab(/of tasks, (~[\d.]+ mJ) per token/, "Tier A's energy per token"),
+    b: grab(/Tier B core \((~\d+B) wired/, "Tier B core (~<n>B wired"),
+    bShare: grab(/Tier B core \(~\d+B wired, (~\d+%)\)/, "Tier B's share of tasks"),
+    gpu: grab(/GPU fallback \((at most [\d.]+%) of tasks/, "GPU fallback (at most <n>% of tasks"),
+    nand: grab(/NAND: (\d+-\d+T) params/, "NAND: <a>-<b>T params").replace("-", " to "),
+    dram: grab(/DRAM: (~[\d.]+T) params/, "DRAM: ~<n>T params"),
+  };
+}
+
+export function FleetDiagram() {
   const at = (s: number) => amdahl.recorded.find((r) => r.share === s)?.energy_x ?? Number.NaN;
+  const f = fleetSpec();
+  const costB = `~${central.fabric.deep_cost_ratio}x Tier A's cost per token`;
   return (
     <Figure
-      id={id}
+      data={{ file: "data/amdahl.json", provenance: amdahl.provenance }}
       title={`Every task stays on wired silicon: a 1% GPU fallback caps the gain at ${times(at(0.01))}`}
       subtitle="The two-tier fleet. A router sends each task to the small wired core; only what it cannot do climbs to a larger wired core, and almost nothing reaches GPUs."
       sources={[
@@ -146,7 +177,7 @@ export function FleetDiagram({ id }: { id?: string }) {
       <div
         className="fleet"
         role="img"
-        aria-label="Diagram. A task arrives from a user or agent and goes to a router and verifier running on the Tier A core. Tier A, a 12B-weight wired core, handles about 95% of tasks at about 1 millijoule per token, reading a memory tier of NAND and DRAM through lookups. It escalates about 5% of tasks to Tier B, a 60B-weight wired core. As a last resort, at most 0.05% of tasks fall back to GPUs."
+        aria-label={`Diagram. A task arrives from a user or agent and goes to a router and verifier running on the Tier A core. Tier A, a ${f.a} wired core, handles ${f.aShare} of tasks at ${f.aEnergy} per token, reading a memory tier of NAND (${f.nand} parameters) and DRAM (${f.dram} parameters) through lookups. It escalates ${f.bShare} of tasks to Tier B, a ${f.b} wired core at ${costB}. As a last resort, ${f.gpu} of tasks fall back to GPUs.`}
       >
         <div className="fleet-flow">
           <div className="fnode">
@@ -163,18 +194,18 @@ export function FleetDiagram({ id }: { id?: string }) {
           <div className="farrow" aria-hidden="true" />
           <div className="fnode fnode-a">
             <span className="fkick">Tier A</span>
-            <b>12B wired core</b>
-            <span>~95% of tasks</span>
-            <span>~1 mJ per token</span>
+            <b>{f.a} wired core</b>
+            <span>{f.aShare} of tasks</span>
+            <span>{f.aEnergy} per token</span>
           </div>
           <div className="farrow farrow-esc" aria-hidden="true">
             <span>escalate</span>
           </div>
           <div className="fnode fnode-b">
             <span className="fkick">Tier B</span>
-            <b>~60B wired core</b>
-            <span>~5% of tasks</span>
-            <span>~5x Tier A's cost per token</span>
+            <b>{f.b} wired core</b>
+            <span>{f.bShare} of tasks</span>
+            <span>{costB}</span>
           </div>
           <div className="farrow farrow-last" aria-hidden="true">
             <span>last resort</span>
@@ -182,7 +213,7 @@ export function FleetDiagram({ id }: { id?: string }) {
           <div className="fnode fnode-gpu">
             <span className="fkick">Fallback</span>
             <b>GPUs</b>
-            <span>at most 0.05% of tasks</span>
+            <span>{f.gpu} of tasks</span>
           </div>
         </div>
         <div className="fleet-mem">
@@ -193,10 +224,10 @@ export function FleetDiagram({ id }: { id?: string }) {
             <span className="fkick">Memory tier, shared by every stream</span>
             <div className="fmem-grid">
               <span>
-                <b>NAND</b> 10 to 50T parameters
+                <b>NAND</b> {f.nand} parameters
               </span>
               <span>
-                <b>DRAM</b> ~1T parameters
+                <b>DRAM</b> {f.dram} parameters
               </span>
               <span>
                 <b>Cartridges</b> and snapshots
@@ -219,15 +250,26 @@ const KIND_COLOR: Record<string, string> = {
   spw: "var(--accent-mark)",
 };
 
-export function GatesFigure({ id }: { id?: string }) {
+export function GatesFigure() {
   const featured = gates.designs
     .filter((d) => d.featured !== null)
     .sort((a, b) => (a.featured ?? 0) - (b.featured ?? 0));
   const layer = (d: (typeof gates.designs)[number]) => `${d.inputs} x ${d.outputs}`;
+  // Like for like, as the design compares them: ternary and 4-bit on the same layer and activations.
+  const int4 = featured.find((d) => d.kind === "int4");
+  const ternary = featured.find(
+    (d) =>
+      d.kind === "ternary" &&
+      d.inputs === int4?.inputs &&
+      d.outputs === int4?.outputs &&
+      d.activation_bits === int4?.activation_bits,
+  );
+  const mac = featured.find((d) => d.kind === "mac");
+  if (!int4 || !ternary || !mac) throw new Error("figures: gates.json lacks a like-for-like pair");
+  const per = (d: (typeof gates.designs)[number]) => Math.round(d.gates_per_weight);
   return (
     <Figure
-      id={id}
-      title="Wired ternary needs about 30 gates per weight; wired 4-bit about 75, a stored-weight MAC 435"
+      title={`Wired ternary needs about ${per(ternary)} gates per weight; wired 4-bit about ${per(int4)}, a stored-weight MAC ${per(mac)}`}
       subtitle="Generic gates per weight after synthesis, for hardwired matrix-vector layers with random weights (8-bit activations unless noted). Fewer gates means less switching."
       data={{ file: "data/gates.json", provenance: gates.provenance }}
       sources={[
@@ -267,10 +309,7 @@ export function GatesFigure({ id }: { id?: string }) {
           name: d.doc_label ?? d.label,
           label: d.doc_label ?? d.label,
           value: d.gates_per_weight,
-          valueLabel:
-            d.kind === "mac"
-              ? String(Math.round(d.gates_per_weight))
-              : d.gates_per_weight.toFixed(1),
+          valueLabel: d.gates_per_weight.toFixed(1),
           sublabel: d.kind === "mac" ? "plus the weight fetch" : undefined,
           color: KIND_COLOR[d.kind] ?? "var(--blue)",
           detail: `${d.cells.toLocaleString("en-US")} cells for ${d.weights.toLocaleString("en-US")} weights`,
@@ -296,19 +335,18 @@ export function GatesFigure({ id }: { id?: string }) {
 
 /* 5. Shared partial sums -------------------------------------------------------------------- */
 
-export function SpwFigure({ id }: { id?: string }) {
+export function SpwFigure() {
   const groups = [1, 3, 4, 5, 6, 7, 8];
   return (
     <Figure
-      id={id}
-      title={`Sharing partial sums saves more as layers get wider: up to ${times(Math.max(...spw.layers.flatMap((l) => l.points.map((p) => p.saving))))} fewer adds`}
+      title={`Sharing partial sums saves more as layers get wider: up to ${Math.max(...spw.layers.flatMap((l) => l.points.map((p) => p.saving)))}x fewer adds`}
       subtitle="Adds for a hardwired ternary layer when every signed combination of a group of g inputs is built once and shared by every output row, against adding each row's inputs directly."
       data={{ file: "data/spw.json", provenance: spw.provenance }}
       sources={[
         from(DESIGN, "Invention 2"),
         from(RESULTS, "SPW add-count model", "RESULTS.md, SPW model"),
       ]}
-      note={`An add-count model, not a synthesis: random ternary weights with 40% zeros. Re-run for this site: ${spw.matches_recorded ? "every ratio matches the recorded output" : "the ratios differ from the recorded output"}.`}
+      note={`An add-count model, not a synthesis: random ternary weights with ${stated(spw.provenance.about, /(\d+% zeros)/, "the share of zero weights")}. Re-run for this site: ${spw.matches_recorded ? "every ratio matches the recorded output" : "the ratios differ from the recorded output"}.`}
       table={
         <DataTable
           caption="Saving by layer and group size"
@@ -338,7 +376,7 @@ const TERM_COLOR: Record<string, string> = {
 };
 const usd = (v: number) => `$${Number(v.toPrecision(2))}`;
 
-export function CostBreakdownFigure({ id }: { id?: string }) {
+export function CostBreakdownFigure() {
   const cases = [
     { key: "central", label: "Central case" },
     { key: "low", label: "Pessimistic case" },
@@ -348,7 +386,6 @@ export function CostBreakdownFigure({ id }: { id?: string }) {
   const share = (k: string) => percent(c.terms.find((t) => t.key === k)?.share ?? 0);
   return (
     <Figure
-      id={id}
       title={`Capital is ${share("capital")} of a million tokens' cost; electricity only ${share("electricity")}`}
       subtitle="Dollars per million tokens on the wired fleet, split into the terms the cost model adds. Once energy is nearly free, the price of the silicon dominates."
       data={{ file: "data/cost-breakdown.json", provenance: costBreakdown.provenance }}
@@ -405,7 +442,7 @@ export function CostBreakdownFigure({ id }: { id?: string }) {
 
 /* 7. Where a decode step's energy goes ------------------------------------------------------ */
 
-export function DecodeFigure({ id }: { id?: string }) {
+export function DecodeFigure() {
   const b = decodeEnergy.b2024;
   const total = b.terms.reduce((a, t) => a + t.joules, 0);
   const colors: Record<string, string> = {
@@ -414,11 +451,20 @@ export function DecodeFigure({ id }: { id?: string }) {
     math: "var(--neutral-mark)",
   };
   const c = decodeEnergy.coefficients;
+  const bytes = b.terms.filter((t) => t.key !== "math").reduce((a, t) => a + t.joules, 0) / total;
+  // The baseline as the survey describes it, on the line the energy model cites.
+  const base = readRepo(SURVEY).split("\n")[b.source.line - 1] ?? "";
+  const said = (re: RegExp, what: string) => stated(base, re, `in Baseline B2024, ${what}`);
+  const baseline = [
+    said(/(Llama-\S+-class) dense/, "the model class"),
+    said(/dense transformer in (\w+) on/, "the number format"),
+    `${said(/\((\d+) GPUs/, "the GPU count")} ${said(/ on (H\d+)s /, "the GPU")}s`,
+    `${said(/~(\d+K) mean context/, "the mean context")} context`,
+  ].join(", ");
   return (
     <Figure
-      id={id}
-      title={`Over 90% of a 2024 token's energy is moving bytes, not doing math`}
-      subtitle={`One generated token of the B2024 baseline (Llama-3.1-405B-class, BF16, 16 H100s, 64K context), at H100's measured ${c.pj_per_hbm_bit} pJ per HBM bit and ${c.pj_per_flop} pJ per tensor-core FLOP.`}
+      title={`About ${Math.round(bytes * 100)}% of a 2024 token's energy is moving bytes, not doing math`}
+      subtitle={`One generated token of the B2024 baseline (${baseline}), at H100's measured ${c.pj_per_hbm_bit} pJ per HBM bit and ${c.pj_per_flop} pJ per tensor-core FLOP.`}
       data={{ file: "data/decode-energy.json", provenance: decodeEnergy.provenance }}
       sources={[{ path: SURVEY, startLine: b.source.line, label: "The survey, Baseline B2024" }]}
       note={`Derived, not measured: each token reads ~${fmt(b.gb_per_token)} GB from HBM (its batch's share of the weights plus its own ${fmt(b.kv_gb_per_sequence)} GB of KV cache, with ~${fmt(b.sequences_beside_weights, 3)} sequences fitting beside the weights). Static power is not counted.`}
@@ -448,7 +494,8 @@ export function DecodeFigure({ id }: { id?: string }) {
   );
 }
 
-export function EnergyLadderFigure({ id }: { id?: string }) {
+export function EnergyLadderFigure() {
+  const wireTest = wireExperiment().order;
   const tone: Record<string, RangeRow["tone"]> = {
     hbm8: "neutral",
     flop2: "neutral",
@@ -469,9 +516,8 @@ export function EnergyLadderFigure({ id }: { id?: string }) {
   }));
   return (
     <Figure
-      id={id}
       title="What one weight costs per token, from fetching it to wiring it"
-      subtitle="Energy per weight per token. The hollow dot is an assumption, not a measurement: experiment 1 tests it."
+      subtitle={`Energy per weight per token. The hollow dot is an assumption, not a measurement: experiment ${wireTest} tests it.`}
       data={{ file: "data/decode-energy.json", provenance: decodeEnergy.provenance }}
       sources={decodeEnergy.per_weight
         .map((w) => ({
@@ -507,11 +553,10 @@ export function EnergyLadderFigure({ id }: { id?: string }) {
   );
 }
 
-export function BatchFigure({ id }: { id?: string }) {
+export function BatchFigure() {
   const s = decodeEnergy.batch;
   return (
     <Figure
-      id={id}
       title="Batching hides weight reads only until arithmetic binds"
       subtitle={`Per-token energy to read a ${s.model} model's weights from HBM, shared across a batch, against the ${fmt(s.math_joules, 2)} J of arithmetic each token needs. Above the crossover batch, fewer bits stop helping on a GPU.`}
       data={{ file: "data/decode-energy.json", provenance: decodeEnergy.provenance }}
@@ -561,9 +606,15 @@ function budgetRows(key: "b2024" | "b2026"): RangeRow[] {
   }));
 }
 
-export function BudgetFigure({ id }: { id?: string }) {
+export function BudgetFigure() {
   const b26 = levers.budgets.b2026;
   const b24 = levers.budgets.b2024;
+  const totalOf = (k: "b2024" | "b2026", naive: boolean, what = "") =>
+    levers.budgets[k].rows.find(
+      (r) => r.kind === "total" && r.naive === naive && r.label.includes(what),
+    )?.central ?? Number.NaN;
+  const naive = (k: "b2024" | "b2026") => totalOf(k, true);
+  const cost = (k: "b2024" | "b2026") => totalOf(k, false, "cost");
   const table = (k: "b2024" | "b2026") => (
     <DataTable
       caption={levers.budgets[k].heading}
@@ -579,8 +630,7 @@ export function BudgetFigure({ id }: { id?: string }) {
   );
   return (
     <Figure
-      id={id}
-      title="Multiplied naively the levers promise a million; overlap-adjusted, about a thousand"
+      title={`Multiplied naively the levers promise ${times(naive("b2026"))} against B2026 and ${times(naive("b2024"))} against B2024; overlap-adjusted, about ${times(cost("b2026"))} and ${times(cost("b2024"))}`}
       subtitle="Each lever's standalone multiplier (low to high, dot at central), grouped by the term it attacks, then the overlap-adjusted subtotals and totals. Hollow dots are the naive product of every central row."
       data={{ file: "data/levers.json", provenance: levers.provenance }}
       sources={[
@@ -601,20 +651,17 @@ export function BudgetFigure({ id }: { id?: string }) {
       }
       note="Every compounding factor here is the survey's inference: no source has measured these levers together at frontier scale."
     >
-      <Tabs
-        label="Baseline"
-        labels={["Against B2026 (late-2026 frontier)", "Against B2024 (dense 405B on H100)"]}
-      >
+      <Tabs label="Baseline" labels={["Against B2026", "Against B2024"]}>
         <RangeRows
           rows={budgetRows("b2026")}
           domain={[0.5, 1e6]}
-          target={{ value: 1000, label: "1000x" }}
+          target={{ value: TARGET, label: `${TARGET}x` }}
           axisLabel="Times cheaper per solved task (log scale)"
         />
         <RangeRows
           rows={budgetRows("b2024")}
           domain={[0.5, 1e6]}
-          target={{ value: 1000, label: "1000x" }}
+          target={{ value: TARGET, label: `${TARGET}x` }}
           axisLabel="Times cheaper per solved task (log scale)"
         />
       </Tabs>
@@ -624,7 +671,7 @@ export function BudgetFigure({ id }: { id?: string }) {
 
 /* Baseline: why per solved task, and what the market already gives -------------------------- */
 
-export function TokensFigure({ id }: { id?: string }) {
+export function TokensFigure() {
   const t = tokensPerTask;
   const NOTE = "research/notes/decoding_test_time.md";
   const k = (v: number) => `~${Math.round(v / 1000)}k`;
@@ -632,7 +679,6 @@ export function TokensFigure({ id }: { id?: string }) {
   const low = t.models.at(-1);
   return (
     <Figure
-      id={id}
       title={`At near-equal scores, output per task differs ${top && low ? (top.tokens / low.tokens).toFixed(1) : ""}x`}
       subtitle="Output tokens per task on the Artificial Analysis Intelligence Index v5 (October 2026, max effort). A cheaper token buys nothing if a model spends more of them."
       data={{ file: "data/tokens-per-task.json", provenance: t.provenance }}
@@ -649,6 +695,16 @@ export function TokensFigure({ id }: { id?: string }) {
         />
       }
     >
+      <ul className="legend legend-top">
+        <li>
+          <span className="key-bar" style={{ background: "var(--accent-mark)" }} />
+          Index score given in the note
+        </li>
+        <li>
+          <span className="key-bar" style={{ background: "var(--neutral-mark)" }} />
+          No score given
+        </li>
+      </ul>
       <BarRows
         max={125000}
         axis={{
@@ -669,14 +725,15 @@ export function TokensFigure({ id }: { id?: string }) {
   );
 }
 
-export function MarketFigure({ id }: { id?: string }) {
+export function MarketFigure() {
   const m = marketTrend;
   const rates = [...m.rates].sort((a, b) => b.by_nov_2026 - a.by_nov_2026);
-  const hi = rates[0];
-  const lo = rates.at(-1);
+  // The range is the market's: the algorithmic-only rate has hardware removed, so it is not a price.
+  const prices = rates.filter((r) => r.key !== "algo");
+  const hi = prices[0];
+  const lo = prices.at(-1);
   return (
     <Figure
-      id={id}
       title={`The market trend alone gives ${lo ? times(lo.by_nov_2026) : ""} to ${hi ? times(hi.by_nov_2026) : ""} from ${m.start} to November 2026`}
       subtitle={`Each published rate of price decline at constant capability, compounded over the ${m.years_to_nov_2026} years since ${m.start}. Against 2024, much of 1000x is what the market already does.`}
       data={{ file: "data/market-trend.json", provenance: m.provenance }}
@@ -705,7 +762,7 @@ export function MarketFigure({ id }: { id?: string }) {
           tone: r.key === "algo" ? "neutral" : "blue",
         }))}
         domain={[1, 10000]}
-        target={{ value: 1000, label: "1000x" }}
+        target={{ value: TARGET, label: `${TARGET}x` }}
         axisLabel="Times cheaper at constant capability by November 2026 (log scale)"
       />
     </Figure>

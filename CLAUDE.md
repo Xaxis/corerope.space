@@ -15,7 +15,8 @@ renders them and charts data generated from them. README.md has the layout and h
 - **Evidence labels survive.** The notes mark independent measurements, vendor claims and derived
   estimates; the renderer turns them into chips (`site/lib/markdown.ts`). Keep them.
 - **Every page links to its source lines and every chart to its data and script.** `SourceLink`,
-  `PageHead` and `Figure`'s provenance line do this; a new page or chart uses them.
+  `PageIntro` (its "Built from" line), `ChapterFoot` and `Figure`'s provenance line do this; a new
+  page or chart uses them.
 - **Status is honest.** The design is a design, not a result. Nothing on the site may imply a
   model-quality claim was tested.
 - **Chart data comes from `make data`** (scripts/data/*.py), never edited by hand. `make check`
@@ -30,7 +31,8 @@ renders them and charts data generated from them. README.md has the layout and h
 
 - Port 4317 for this project's local server (`npx next start -p 4317` in site/ after a build).
 - Heavy work goes through `~/.claude/claude-core/bin/heavy`: `make synth`, builds, and every
-  browser tool (`tools/site/shots.ts`, `interact.ts`, `peek.ts`). Chromium stays on SwiftShader.
+  browser tool (`tools/site/shots.ts`, `interact.ts`, `peek.ts`, `scenes.ts`, `story.ts`). Chromium
+  stays on SwiftShader.
 - Gate before committing: `pnpm lint && pnpm typecheck && pnpm test && make check`, a build, then
   `tools/site/shots.ts` (every page, desktop and phone, light and dark, axe, no sideways scroll) and
   `tools/site/interact.ts` against the local server. Look at the shots of what you changed.

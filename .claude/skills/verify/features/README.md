@@ -24,7 +24,7 @@ machine (Vercel, with VERCEL_TOKEN from .env); run it only to ship, never as a p
 
 ## Areas
 
-- [home](home.md): the story: the 3D core rope hero, headline numbers, six chapters, three scroll-driven 3D scenes.
+- [home](home.md): the story: the 3D core rope hero, headline numbers, seven chapters, four of them scroll-driven 3D scenes.
 - [survey](survey.md): /survey (and the old /baseline, /levers): baselines, four terms, lever families, budget, odds.
 - [design](design.md): /design (and the old /design/<slug>): seven parts, each with its risk, test and evidence.
 - [cost-model](cost-model.md): /cost-model, the interactive calculator, the model's charts and the Amdahl control.

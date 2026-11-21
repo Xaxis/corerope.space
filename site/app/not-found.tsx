@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Not found",
+  alternates: { canonical: null },
+};
 
 export default function NotFound() {
   return (
-    <header className="intro">
+    <header className="intro intro-alone">
       <div className="wrap">
         <p className="kicker">
           <span className="kicker-n">404</span>
@@ -11,7 +17,7 @@ export default function NotFound() {
         <h1 className="intro-title">This wire goes around the core</h1>
         <div className="intro-lede">
           <p>
-            There is no page at this address. The story, the design and the cost model are a click
+            There is no page at this address. The story, the design and the research are a click
             away.
           </p>
         </div>

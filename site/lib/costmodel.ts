@@ -121,7 +121,7 @@ const money = (v: number) => {
 const power10 = (v: number) => {
   const e = Math.floor(Math.log10(v));
   const m = v / 10 ** e;
-  return Math.abs(m - 1) < 1e-9 ? `10^${e}` : `${sig(m, 2)} x 10^${e}`;
+  return Math.abs(m - 1) < 1e-9 ? `10^${e}` : `${sig(m, 2)} × 10^${e}`;
 };
 
 export const GROUPS = [
@@ -142,7 +142,7 @@ export const PARAMS: ParamSpec[] = [
     max: 20,
     scale: "log",
     format: (v) => `${sig(v)} J`,
-    help: "A late-2026 frontier token on GB300 NVL72: about 0.5 to 2 J, derived from its price and SemiAnalysis's Rubin measurement.",
+    help: "A late-2026 frontier token on GB300 NVL72, derived from its price and SemiAnalysis's Rubin measurement.",
   },
   {
     key: "base_usd_per_Mtok",
@@ -153,7 +153,7 @@ export const PARAMS: ParamSpec[] = [
     max: 10,
     scale: "log",
     format: (v) => `$${sig(v)}`,
-    help: "DeepSeek-V4-Pro on GB300 at about 27 tok/s per user: $0.12 per million output tokens (InferenceX).",
+    help: "DeepSeek-V4-Pro-class serving on GB300 NVL72, per million output tokens (InferenceX).",
   },
   {
     key: "core_active_B",
@@ -175,7 +175,7 @@ export const PARAMS: ParamSpec[] = [
     max: 3,
     scale: "log",
     format: (v) => `${sig(v)} pJ`,
-    help: "Wired ternary with shared partial sums, including wiring. Taalas HC1 implies about 2 pJ per parameter; experiment 1 tests 0.1 pJ.",
+    help: "Wired ternary with shared partial sums, including wiring: an assumption, not a measurement.",
   },
   {
     key: "act_sparsity_gain",
@@ -197,7 +197,7 @@ export const PARAMS: ParamSpec[] = [
     max: 5,
     scale: "log",
     format: (v) => `${sig(v)} mJ`,
-    help: "Recurrent state, sparse global attention and memory-tier lookups: about 0.2 mJ in the central case.",
+    help: "Recurrent state, sparse global attention and memory-tier lookups.",
   },
   {
     key: "overhead_mult",
@@ -230,7 +230,7 @@ export const PARAMS: ParamSpec[] = [
     max: 0.5,
     scale: "linear",
     format: pct,
-    help: "Tier B is the same design scaled up: a ~60B-weight wired core.",
+    help: "Tier B is the same design scaled up, a larger wired core sharing the memory tier.",
   },
   {
     key: "deep_cost_ratio",
@@ -241,7 +241,7 @@ export const PARAMS: ParamSpec[] = [
     max: 20,
     scale: "log",
     format: (v) => `${sig(v)}x`,
-    help: "About 5x Tier A's cost per token.",
+    help: "Tier B's cost per token, as a multiple of Tier A's.",
   },
   {
     key: "gpu_share",
@@ -252,7 +252,7 @@ export const PARAMS: ParamSpec[] = [
     max: 0.1,
     scale: "log0",
     format: pct,
-    help: "The Amdahl trap: a share f at baseline cost caps the gain at 1/f. For 1000x it must stay near 0.05%.",
+    help: "The Amdahl trap: a share f at baseline cost caps the gain at 1/f.",
   },
   {
     key: "set_capex_usd",
@@ -329,7 +329,7 @@ export const PARAMS: ParamSpec[] = [
     max: 5e8,
     scale: "log",
     format: money,
-    help: "Masks, design and verification per frozen-core generation: ~$40M for a new chip, an assumed ~$3M with one via mask.",
+    help: "Masks, design and verification per frozen-core generation: a full mask set for a new chip, or one via mask on the fabric.",
   },
   {
     key: "life_tokens",
@@ -351,7 +351,7 @@ export const PARAMS: ParamSpec[] = [
     max: 1e-2,
     scale: "log",
     format: (v) => `$${sig(v, 2)}`,
-    help: "A thousand concurrent streams read the same tables, so storage capital per token is negligible.",
+    help: "Every concurrent stream reads the same tables, so storage capital per token is small.",
   },
 ];
 

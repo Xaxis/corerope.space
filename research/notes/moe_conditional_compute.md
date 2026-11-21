@@ -128,7 +128,7 @@ Gains here are small and shrinking. A 2026 study finds early-exit opportunity ha
   - Oracle MMLU tests: Llama2-7B skips 4.69% of layers (accuracy 0.41 to 0.38); Llama3-8B skips 0.18% (0.54 to 0.52).
   - Improved pretraining recipes reduce layer redundancy. Larger models (over 20B) and base models show more potential. Dense transformers offer more early-exit potential than MoE and SSMs.
   - Reported as layer-skip proxies only, with no wall-clock speedups.
-- Mixture-of-Depths (Raposo et al., Google DeepMind, 2024, [OLDER]) | source: [Graphcore Research summary](https://graphcore-research.github.io/mixture-of-depths)
+- Mixture-of-Depths (Raposo et al., Google DeepMind, 2024, [OLDER]) | source: [Graphcore Research summary, archived](https://web.archive.org/web/20251213050140/https://graphcore-research.github.io/mixture-of-depths/)
   - A 12.5%-capacity MoD (only 12.5% of tokens processed per routed block) reaches lower loss than isoFLOP-optimal baselines at 6e18-1e20 FLOPs (60M-3B params). Some variants are both cheaper per forward pass and better.
   - MoDE (MoD + MoE) beats vanilla MoE at equal FLOPs per forward pass.
   - Caveats: top-k routing is non-causal at sampling time, which needs an auxiliary loss or a separate predictor router. Downstream tasks were not evaluated.

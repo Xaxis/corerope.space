@@ -2,7 +2,7 @@
 
 import { type ReactNode, useId, useState } from "react";
 
-/** A segmented switch between panels. Every panel is rendered, so each works without JavaScript's help for search and print. */
+/** A segmented switch between panels. Every panel is in the page's HTML, and print shows them all. */
 export function Tabs({
   labels,
   children,

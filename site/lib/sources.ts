@@ -1,7 +1,5 @@
 // Every external link the research cites, grouped by site, each with the places that cite it.
-import { type Citation, citations, DOCS } from "./content";
-
-type Doc = (typeof DOCS)[number];
+import { type Citation, citations, DOCS, type Doc } from "./content";
 
 export type SourceLink = {
   url: string;
@@ -29,22 +27,18 @@ function nameOf(cs: Citation[], host: string): string {
   return best || host;
 }
 
-export function sourceSites(docs: readonly Doc[] = DOCS): SourceSite[] {
+export function sourceSites(): SourceSite[] {
   const byUrl = new Map<string, (Citation & { doc: Doc })[]>();
-  for (const doc of docs)
+  for (const doc of DOCS)
     for (const c of citations(doc.file))
       byUrl.set(c.url, [...(byUrl.get(c.url) ?? []), { ...c, doc }]);
   const bySite = new Map<string, SourceLink[]>();
   for (const [url, cs] of byUrl) {
     const host = hostOf(url);
-    const where = docs
-      .map((doc) => ({
-        doc,
-        lines: [...new Set(cs.filter((c) => c.doc === doc).map((c) => c.line))].sort(
-          (a, b) => a - b,
-        ),
-      }))
-      .filter((w) => w.lines.length > 0);
+    const where = DOCS.map((doc) => ({
+      doc,
+      lines: [...new Set(cs.filter((c) => c.doc === doc).map((c) => c.line))].sort((a, b) => a - b),
+    })).filter((w) => w.lines.length > 0);
     bySite.set(host, [
       ...(bySite.get(host) ?? []),
       { url, name: nameOf(cs, host), path: pathOf(url), where },

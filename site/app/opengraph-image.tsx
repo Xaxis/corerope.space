@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { LOGO } from "@/components/Logo";
 import { multipliers } from "@/lib/data";
 import { times } from "@/lib/scale";
 
@@ -31,7 +32,7 @@ export default function OpenGraphImage() {
         {/* biome-ignore lint/a11y/noSvgWithoutTitle: drawn into a PNG, never part of a page */}
         <svg width="44" height="44" viewBox="0 0 32 32">
           <path
-            d="M16 5.5 A5.2 10.5 0 0 0 16 26.5"
+            d={LOGO.back}
             fill="none"
             stroke="#2b2926"
             strokeWidth="4"
@@ -39,45 +40,57 @@ export default function OpenGraphImage() {
             opacity="0.6"
           />
           <path
-            d="M2 18.5 C 8 18.5, 10 16, 16 16 S 24 13.5, 30 13.5"
+            d={LOGO.wire}
             fill="none"
             stroke="#d4581f"
             strokeWidth="2.6"
             strokeLinecap="round"
           />
-          <path
-            d="M16 5.5 A5.2 10.5 0 0 1 16 26.5"
-            fill="none"
-            stroke="#2b2926"
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
+          <path d={LOGO.front} fill="none" stroke="#2b2926" strokeWidth="4" strokeLinecap="round" />
         </svg>
         Corerope
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+        {/* Two set lines: the renderer misplaces word spacing around a hyphen it may break at. */}
         <div
           style={{
+            display: "flex",
+            flexDirection: "column",
             fontSize: 68,
             fontWeight: 700,
             lineHeight: 1.04,
             letterSpacing: "-0.03em",
-            maxWidth: 940,
           }}
         >
-          Making a frontier-quality LLM roughly 1000x cheaper to run
+          <div>Making a frontier-quality LLM</div>
+          <div>roughly 1000x cheaper to run</div>
         </div>
-        <div style={{ fontSize: 28, color: "#4a4740", display: "flex" }}>
-          {`Design, central case: ${et ? times(et.central) : ""} less energy and ${dt ? times(dt.central) : ""} lower cost per task. Not yet proven.`}
+        <div style={{ display: "flex", flexDirection: "column", fontSize: 28, color: "#4a4740" }}>
+          <div>{`Design, central case: ${et ? times(et.central) : ""} less energy and ${dt ? times(dt.central) : ""} lower cost per task.`}</div>
+          <div style={{ color: "#a6441a" }}>Not yet proven.</div>
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 30 }}>
-        {cores.map((c) => (
+        {/* Five cores with the wire threaded through them, as in the logo. */}
+        <div style={{ display: "flex", alignItems: "center", gap: 30, position: "relative" }}>
+          {cores.map((c) => (
+            <div
+              key={c}
+              style={{ width: 26, height: 64, borderRadius: 40, border: "9px solid #2b2926" }}
+            />
+          ))}
           <div
-            key={c}
-            style={{ width: 26, height: 64, borderRadius: 40, border: "9px solid #2b2926" }}
+            style={{
+              position: "absolute",
+              left: -24,
+              right: -24,
+              top: 30,
+              height: 5,
+              borderRadius: 3,
+              background: "#d4581f",
+            }}
           />
-        ))}
+        </div>
         <div style={{ marginLeft: "auto", fontSize: 26, color: "#a6441a", fontWeight: 600 }}>
           corerope.space
         </div>

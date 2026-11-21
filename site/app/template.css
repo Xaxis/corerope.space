@@ -38,6 +38,10 @@
   padding: clamp(56px, 8vw, 104px) 0 clamp(40px, 5vw, 64px);
   border-bottom: 1px solid var(--hair);
 }
+/* A page that is only its intro (the 404): the footer's rule is the only one needed. */
+.intro-alone {
+  border-bottom: 0;
+}
 .intro-title {
   margin: 0;
   max-width: 18ch;
@@ -46,6 +50,12 @@
   letter-spacing: -0.035em;
   font-weight: 680;
   text-wrap: balance;
+}
+.intro-title-long {
+  max-width: 26ch;
+  font-size: clamp(30px, 3.4vw, 46px);
+  line-height: 1.08;
+  letter-spacing: -0.028em;
 }
 .intro-lede {
   max-width: 64ch;
@@ -66,6 +76,8 @@
   color: var(--muted);
   display: inline-block;
   padding: 4px 0;
+  /* Below the descenders, so a file name's underscores stay visible. */
+  text-underline-offset: 4px;
 }
 .built-from code {
   font-size: 12px;
@@ -539,7 +551,7 @@
 
 /* The numbers band under the hero. */
 .numbers {
-  padding: 8px 0 56px;
+  padding: 40px 0 56px;
 }
 .numbers .stats-row {
   margin-top: 0;
@@ -620,16 +632,28 @@
 .seg-field .seg {
   flex-wrap: wrap;
 }
+/* On a phone the steps sit in two even columns, and an odd last step spans both, instead of three
+   on one row and the fourth alone. */
+@media (max-width: 760px) {
+  .seg.seg-steps {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .seg-steps label:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
 .seg label {
+  /* No tabular figures: in this face they widen the hyphen in "Joule-priced". */
   font-size: 13.5px;
   color: var(--ink-2);
   padding: 7px 12px;
   border-radius: 7px;
   cursor: pointer;
-  font-variant-numeric: tabular-nums;
 }
 .seg label[data-on="true"] {
-  background: var(--surface);
+  /* Lighter than the track in both themes (see .seg button in globals.css). */
+  background: var(--seg-on, var(--surface));
   color: var(--ink);
   font-weight: 600;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
@@ -643,6 +667,12 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
   margin: 18px 0 0;
+}
+/* Each label on top, each value on the bottom line: a label that wraps no longer drops its value. */
+.amdahl-out > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 .amdahl-out dt {
   font-size: 12.5px;
@@ -707,10 +737,12 @@
   display: flex;
   gap: 4px;
   margin: 0;
-  padding: 8px 0;
+  padding: 8px 32px 8px 0;
   list-style: none;
   overflow-x: auto;
   scrollbar-width: none;
+  /* Fades out at the right, so chapters past the edge read as more to scroll to, not cut words. */
+  mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
 }
 .subnav a {
   display: inline-flex;
@@ -743,7 +775,8 @@
 /* ---- Pager ----------------------------------------------------------------------------------- */
 .pager {
   border-top: 1px solid var(--hair);
-  padding: 40px 0 72px;
+  /* The footer's margin is the space below: 72 px more left a ~190 px empty band. */
+  padding: 40px 0 0;
 }
 .pager-grid {
   display: grid;
@@ -837,14 +870,17 @@
 }
 
 /* ---- The survey's lever families ------------------------------------------------------------- */
+/* Columns, not a grid: the families differ in length by hundreds of pixels, and a grid row stretched
+   the short ones into empty cards. Each column reads top to bottom, in order. */
 .families {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
-  gap: 20px;
+  columns: 2 340px;
+  column-gap: 20px;
 }
 .family {
   display: flex;
   flex-direction: column;
+  break-inside: avoid;
+  margin: 0 0 20px;
   padding: 22px 22px 18px;
   border: 1px solid var(--hair);
   border-radius: var(--radius);
@@ -882,16 +918,14 @@
 }
 .family-lever {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 2px 12px;
+  flex-direction: column;
+  gap: 2px;
   margin: 0;
   font-size: 14.5px;
 }
 .family-lever span {
   color: var(--accent);
   font-weight: 600;
-  font-variant-numeric: tabular-nums;
 }
 .family-meta {
   display: grid;
@@ -916,7 +950,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px 18px;
-  margin: auto 0 0;
+  margin: 0;
   padding-top: 16px;
   font-size: 13.5px;
 }
@@ -965,10 +999,15 @@
   margin: 0;
   padding: 0;
 }
+/* The number in its own column, so a label that wraps lines up under its first word. */
+.foot-pages a {
+  display: inline-grid;
+  grid-template-columns: 2.4em auto;
+  align-items: baseline;
+}
 .foot-pages .mono {
   font-size: 11.5px;
   color: var(--muted);
-  margin-right: 4px;
 }
 
 /* ---- A research document under the template intro -------------------------------------------- */

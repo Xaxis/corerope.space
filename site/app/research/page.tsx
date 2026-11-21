@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Fragment } from "react";
 import { SourceFilter } from "@/components/SourceFilter";
 import { Chapter, PageIntro, Pager } from "@/components/Template";
 import { DOCS, docTitle, summaryOf, wordCount } from "@/lib/content";
@@ -8,8 +9,7 @@ import { sourceSites } from "@/lib/sources";
 
 export const metadata: Metadata = {
   title: "Research library",
-  description:
-    "The survey, the design, six research notes and the recorded experiment results, in full, with every source they cite.",
+  description: `The survey, the design, ${DOCS.filter((d) => d.kind === "note").length} research notes and the recorded experiment results, in full, with every source they cite.`,
   alternates: { canonical: "/research" },
 };
 
@@ -106,7 +106,17 @@ export default function Research() {
             {sites.map((s) => (
               <li key={s.host} className="source-site" data-site>
                 <h3 className="source-site-host">
-                  {s.host}
+                  {/* A narrow column: a long host breaks after a dot, never inside a word. */}
+                  {s.host.split(".").map((part, i, all) => (
+                    <Fragment key={all.slice(0, i + 1).join(".")}>
+                      {i > 0 && (
+                        <>
+                          .<wbr />
+                        </>
+                      )}
+                      {part}
+                    </Fragment>
+                  ))}
                   {s.links.length > 1 && <span>{s.links.length} links</span>}
                 </h3>
                 <ul className="source-links">
@@ -128,9 +138,9 @@ export default function Research() {
                           <span key={w.doc.slug}>
                             {i > 0 && "; "}
                             {inline(w.doc.short)} {w.lines.length > 1 ? "lines" : "line"}{" "}
-                            {w.lines.map((n, j) => (
+                            {w.lines.map((n) => (
                               <span key={n}>
-                                {j > 0 && ", "}
+                                {" "}
                                 <a
                                   href={blobUrl({ path: w.doc.file, startLine: n })}
                                   aria-label={`${w.doc.short}, line ${n}`}

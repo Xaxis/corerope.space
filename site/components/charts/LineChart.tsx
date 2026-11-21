@@ -1,6 +1,6 @@
 "use client";
 
-import { type KeyboardEvent, type PointerEvent, useMemo, useRef, useState } from "react";
+import { type KeyboardEvent, type PointerEvent, useId, useMemo, useRef, useState } from "react";
 import { linearTicks, logTicks, pc, type ScaleSpec, scale } from "@/lib/scale";
 
 export type Point = { x: number; y: number };
@@ -10,8 +10,6 @@ export type Series = {
   color: string;
   points: Point[];
   dashed?: boolean;
-  /** Write the label at the line's end, beside the last point. */
-  endLabel?: boolean;
 };
 export type Axis = ScaleSpec & { ticks?: number[]; format: (v: number) => string; label?: string };
 export type Marker = {
@@ -29,13 +27,13 @@ type Props = {
   y: Axis;
   height?: number;
   markers?: Marker[];
-  hlines?: { y: number; label: string }[];
+  /** A dashed level across the plot, labelled at the right, above the line unless `below`. */
+  hlines?: { y: number; label: string; below?: boolean }[];
   vlines?: { x: number; label: string }[];
   /** The tooltip's heading for an x. */
   readout: (x: number) => string;
   value: (y: number, s: Series) => string;
   ariaLabel: string;
-  rightMargin?: number;
 };
 
 /**
@@ -54,8 +52,10 @@ export function LineChart({
   readout,
   value,
   ariaLabel,
-  rightMargin,
 }: Props) {
+  // A marker's label sits on a box of the card's colour: a halo hides a line crossing the letters,
+  // not one crossing the space above a period ("2.02x" read as "2:02x").
+  const labelBg = `label-bg-${useId().replace(/[^\w-]/g, "")}`;
   const fx = useMemo(() => scale(x), [x]);
   const fy = useMemo(() => scale(y), [y]);
   const xt = x.ticks ?? (x.type === "log" ? logTicks(x.domain) : linearTicks(x.domain));
@@ -69,7 +69,7 @@ export function LineChart({
   );
   const [idx, setIdx] = useState<number | null>(null);
   const area = useRef<HTMLDivElement>(null);
-  const m = { l: 52, r: rightMargin ?? (series.some((s) => s.endLabel) ? 128 : 18), t: 14, b: 40 };
+  const m = { l: 52, r: 18, t: 14, b: 40 };
 
   const path = (pts: Point[]) =>
     pts
@@ -95,6 +95,7 @@ export function LineChart({
     setIdx(best);
   };
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") return setIdx(null);
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
     e.preventDefault();
     setIdx((i) =>
@@ -195,6 +196,12 @@ export function LineChart({
           )}
         </svg>
         <svg className="layer" aria-hidden="true">
+          <defs>
+            <filter id={labelBg} x="-0.06" y="-0.12" width="1.12" height="1.24">
+              <feFlood style={{ floodColor: "var(--surface)" }} />
+              <feComposite in="SourceGraphic" operator="over" />
+            </filter>
+          </defs>
           <line x1="0" x2="100%" y1="100%" y2="100%" className="baseline" />
           {yt.map((t) => (
             <text key={`yl${t}`} x="0" dx="-8" y={pc(1 - fy(t))} dy="0.35em" textAnchor="end">
@@ -217,7 +224,7 @@ export function LineChart({
               x="100%"
               dx="-6"
               y={pc(1 - fy(h.y))}
-              dy="-6"
+              dy={h.below ? 16 : -6}
               textAnchor="end"
               style={{ fill: "var(--ink-2)", fontWeight: 600 }}
             >
@@ -236,25 +243,6 @@ export function LineChart({
               {v.label}
             </text>
           ))}
-          {series
-            .filter((s) => s.endLabel)
-            .map((s) => {
-              const last = s.points[s.points.length - 1];
-              if (!last) return null;
-              return (
-                <text
-                  key={s.key}
-                  x={pc(fx(last.x))}
-                  dx="8"
-                  y={pc(1 - fy(last.y))}
-                  dy="0.35em"
-                  className="ink2"
-                  style={{ fill: "var(--ink-2)" }}
-                >
-                  {s.label}
-                </text>
-              );
-            })}
           {markers.map((mk) => (
             <g key={`${mk.x}-${mk.y}-${mk.label}`}>
               <circle
@@ -272,6 +260,7 @@ export function LineChart({
                   dx={mk.anchor === "end" ? -9 : mk.anchor === "middle" ? 0 : 9}
                   dy={mk.dy ?? -9}
                   textAnchor={mk.anchor ?? "start"}
+                  filter={`url(#${labelBg})`}
                   style={{ fill: "var(--ink)", fontWeight: 600, fontSize: 12 }}
                 >
                   {mk.label}

@@ -136,10 +136,6 @@ def number(cell: str) -> float | None:
     return float(m.group(1))
 
 
-def slug(text: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "-", plain(text).lower()).strip("-")
-
-
 # --- Numbers quoted in prose ---------------------------------------------------------------------
 
 

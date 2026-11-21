@@ -24,9 +24,7 @@ export function StoryChapter({
   steps,
   param,
   param2,
-  overlay,
   foot,
-  onStep,
 }: {
   id: string;
   n: string;
@@ -36,9 +34,7 @@ export function StoryChapter({
   steps: StoryStep[];
   param?: number;
   param2?: number;
-  overlay?: ReactNode;
   foot?: ReactNode;
-  onStep?: (step: number) => void;
 }) {
   const [active, setActive] = useState(0);
   const refs = useRef<(HTMLElement | null)[]>([]);
@@ -67,7 +63,6 @@ export function StoryChapter({
     };
   }, []);
 
-  useEffect(() => onStep?.(active), [active, onStep]);
   const own = steps[active]?.scene;
 
   return (
@@ -114,7 +109,6 @@ export function StoryChapter({
                   </li>
                 ))}
               </ol>
-              {overlay}
             </Stage>
           </div>
         </div>

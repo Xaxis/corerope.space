@@ -1,10 +1,8 @@
 // The design's seven parts, as its sections lay them out: six numbered inventions plus the two-tier
 // fleet. Titles and summaries are read from research/02-corerope-design.md; only the URL slugs and
 // the order and the short labels for navigation are set here.
-import { firstParagraph, type Section, section } from "./content";
+import { DESIGN, firstParagraph, type Section, section } from "./content";
 import { roadmap } from "./data";
-
-export const DESIGN = "research/02-corerope-design.md";
 
 const LIST = [
   { slug: "split-mind", prefix: "Invention 1:", short: "Split mind" },
@@ -55,6 +53,9 @@ export function inventions(): Invention[] {
   });
 }
 
-export function invention(slug: string): Invention | undefined {
-  return inventions().find((x) => x.slug === slug);
+/** The experiment that measures the energy per weight-operation, the design's least-tested input. */
+export function wireExperiment(): Experiment {
+  const e = roadmap.experiments.find((x) => /pJ per weight-operation/.test(x.tests));
+  if (!e) throw new Error("inventions: no experiment tests the energy per weight-operation");
+  return e;
 }

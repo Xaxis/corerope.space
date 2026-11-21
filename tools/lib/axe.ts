@@ -1,5 +1,5 @@
 // From paperwright.diy tools/lib/axe.ts @ 352b780 blob 5c6fce6953b5.
-// What axe-core finds on a page against WCAG 2.2 A and AA, for the tour and the site's shots: each
+// What axe-core finds on a page against WCAG 2.2 A and AA, for the site's shots and checks: each
 // rule broken, how badly, and a few of the elements that break it.
 import { join, resolve } from "node:path";
 import type { Page } from "playwright-core";

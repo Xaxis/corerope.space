@@ -12,11 +12,19 @@ plus an index of every source cited across the files.
   named by the longest text any citation gives it, with the address after the host (so links the
   notes name alike differ) and the lines that cite it, per document. A search box and a "Cited in"
   document picker (components/SourceFilter.tsx) hide what does not match and say how many links
-  are left; without JavaScript the whole list shows.
+  are left; without JavaScript the whole list shows. Each citing line is a numbered chip (a 24 px
+  target), and a long host name breaks only after a dot.
 - documents: /research/<slug> for path-to-1000x, corerope-design, quantization-numerics,
   moe-conditional-compute, attention-kv-cache, decoding-test-time, distillation-cost-trends,
   hardware-systems, results. Each has a TOC (ids from the same slugger as the headings), an evidence
-  legend for notes, and a source link to the file.
+  legend for notes, and a source link to the file. The renderer (site/lib/markdown.ts) sets a caret
+  power as a superscript ("C^0.5095", "e^(-P_w/gamma_w)"), turns the design's "[Diagram: ...]" and
+  "[Chart: ...]" specifications into a box linking to where the site draws them, and lets a table
+  beside the contents list use the column's full width. Evidence pills drop the label's own
+  brackets, and a label over 28 characters may wrap. Ranges, hyphenated names with numbers, flags,
+  arrows and number-unit pairs never break ("55-82%", "gpt-oss-120b", "-noabc", "815 mm2"). A
+  table whose first column is single short words (a rank, "Dropped") keeps it narrow; on a phone, cells over 60 characters
+  hold a 13em column and the table scrolls sideways under its edge shade.
 
 ## How to reach it
 
@@ -34,7 +42,10 @@ for s in path-to-1000x corerope-design quantization-numerics moe-conditional-com
   printf '%s %s\n' $s "$(curl -s -o /dev/null -w '%{http_code}' localhost:4317/research/$s)"; done
 curl -s localhost:4317/research/hardware-systems | grep -o '<h1[^>]*>[^<]*' | sed 's/<h1[^>]*>//'
 curl -s localhost:4317/research | grep -o 'class="source-site"' | wc -l           # one per site (62)
-cd site && npx vitest run test/sources.test.ts                                      # 5 pass
+curl -s localhost:4317/research/corerope-design | grep -o 'class="figure-spec"' | wc -l   # 2
+curl -s localhost:4317/design | grep -c 'figure-spec'                                # 0: drawn there
+curl -s localhost:4317/research/moe-conditional-compute | grep -o 'C<sup>0.5095</sup>' | head -1
+cd site && npx vitest run test/sources.test.ts test/markdown.test.ts               # 5 + 6 pass
 ```
 
 Proves it when: nine 200s; the h1 is "Inference Hardware and Serving Systems: Energy and Cost per

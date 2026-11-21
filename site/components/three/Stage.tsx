@@ -3,7 +3,7 @@
 // A dark stage that runs one 3D scene. three.js and the scene load only when the stage nears the
 // screen, and the scene is released again when it is far away; it pauses off screen and in a
 // hidden tab; a reader can pause it (WCAG 2.2.2), and one who asked for less motion gets a still
-// frame. Without WebGL the fallback is shown instead.
+// frame. Without WebGL the stage says in words what the scene would show.
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { Handle } from "./kit";
 
@@ -25,17 +25,15 @@ export function Stage({
   param2 = 0,
   label,
   className,
-  fallback,
   children,
 }: {
   scene: SceneName;
   step?: number;
   param?: number;
   param2?: number;
-  /** What the scene shows, for screen readers. */
+  /** What the scene shows, for screen readers, and in words where WebGL is missing. */
   label: string;
   className?: string;
-  fallback?: ReactNode;
   /** HTML laid over the scene: captions, readouts, controls. */
   children?: ReactNode;
 }) {
@@ -76,7 +74,7 @@ export function Stage({
         .then(([kit, mod]) => {
           loading = false;
           if (cancelled || !wanted || handle.current) return;
-          if (!kit.webglAvailable()) return fail();
+          // mount throws without WebGL. (A probe canvas here once leaked a context per stage.)
           handle.current = kit.mount(el, mod, live.current, { still, onLost: fail });
           if (!still && !playingNow.current) handle.current.setPlaying(false);
           setStatus("ready");
@@ -113,6 +111,8 @@ export function Stage({
       far.disconnect();
       handle.current?.dispose();
       handle.current = null;
+      // A new scene starts from nothing: no canvas yet, so no "ready" and no pause button.
+      setStatus("idle");
     };
   }, [scene]);
 
@@ -131,7 +131,11 @@ export function Stage({
       data-scene={scene}
     >
       <div className="stage-gl" ref={host} role="img" aria-label={label} />
-      {status === "failed" && <div className="stage-fallback">{fallback}</div>}
+      {status === "failed" && (
+        <div className="stage-fallback">
+          <p>{label}</p>
+        </div>
+      )}
       {children}
       {status === "ready" && !reduced && (
         <button
@@ -140,10 +144,10 @@ export function Stage({
           aria-pressed={!playing}
           onClick={() => setPlaying((p) => !p)}
         >
+          {/* One name, with the state in aria-pressed: a name that also flipped was read as
+              "Play the animation, pressed". */}
           <span aria-hidden="true">{playing ? "❚❚" : "▶"}</span>
-          <span className="visually-hidden">
-            {playing ? "Pause the animation" : "Play the animation"}
-          </span>
+          <span className="visually-hidden">Pause the animation</span>
         </button>
       )}
     </div>

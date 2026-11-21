@@ -1,8 +1,9 @@
 // The experiments whose failure the design doc states as a cost-model input: each case reads its
 // value from the doc's own words or the presets, and lands where the doc says it lands.
 import { describe, expect, it } from "vitest";
-import { presets, roadmap } from "@/lib/data";
+import { roadmap } from "@/lib/data";
 import { failCase } from "@/lib/failures";
+import { presets } from "@/lib/presets";
 
 const byOrder = (n: number) => {
   const e = roadmap.experiments.find((x) => x.order === n);

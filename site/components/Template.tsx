@@ -5,9 +5,9 @@ import GithubSlugger from "github-slugger";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { docByFile, type Quote } from "@/lib/content";
-import { blobUrl, editUrl, PAGES, type Repo } from "@/lib/site";
+import { blobUrl, editUrl, PAGES, type Repo, whereLabel } from "@/lib/site";
 
-export type Stat = { value: ReactNode; label: string; note?: ReactNode; tone?: "accent" | "plain" };
+export type Stat = { value: ReactNode; label: string; note?: ReactNode; tone?: "accent" };
 
 export function Stats({ items }: { items: Stat[] }) {
   return (
@@ -49,7 +49,8 @@ export function PageIntro({
           <span className="kicker-n">{n}</span>
           {kicker}
         </p>
-        <h1 className="intro-title">{title}</h1>
+        {/* A research note's title is its whole question, up to a hundred characters: set smaller. */}
+        <h1 className={`intro-title${title.length > 60 ? " intro-title-long" : ""}`}>{title}</h1>
         <div className="intro-lede">{lede}</div>
         {children}
         {stats && <Stats items={stats} />}
@@ -57,11 +58,12 @@ export function PageIntro({
           Built from{" "}
           {files.map((f, i) => (
             <span key={f}>
-              {i > 0 && ", "}
               <a href={blobUrl({ path: f })}>
                 <code>{f}</code>
               </a>{" "}
-              (<a href={editUrl(f)}>edit</a>)
+              <span className="nowrap">
+                (<a href={editUrl(f)}>edit</a>){i < files.length - 1 && ","}
+              </span>{" "}
             </span>
           ))}
         </p>
@@ -97,11 +99,7 @@ export function ChapterFoot({
         <span className="chapter-source">
           Source:{" "}
           <a href={blobUrl(source)}>
-            <code>
-              {source.path}
-              {source.startLine !== undefined &&
-                `, ${source.endLine && source.endLine !== source.startLine ? `lines ${source.startLine} to ${source.endLine}` : `line ${source.startLine}`}`}
-            </code>
+            <code>{whereLabel(source)}</code>
           </a>
         </span>
       )}

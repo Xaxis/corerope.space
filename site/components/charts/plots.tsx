@@ -3,8 +3,11 @@
 // The line charts. Each imports its own data file, so only that file ships to the browser.
 import amdahl from "@data/amdahl.json";
 import decode from "@data/decode-energy.json";
+import gates from "@data/gates.json";
 import spw from "@data/spw.json";
+import { central, millions } from "@/lib/presets";
 import { percent, times } from "@/lib/scale";
+import { TARGET } from "@/lib/site";
 import { Legend, LineChart, type Series } from "./LineChart";
 
 const shareTick = (v: number) => percent(v);
@@ -13,6 +16,10 @@ const xTick = (v: number) => `${v.toLocaleString("en-US")}x`;
 /** Energy and dollar gain per task against the share of tasks that fall back to GPUs. */
 export function AmdahlPlot() {
   const curve = amdahl.curve.filter((p) => p.share > 0);
+  // The two dollar curves are the central case with each scenario's NRE (costmodel_data.py).
+  const fabric = `Dollars per task, ${millions(central.fabric.nre_usd)} NRE (via fabric)`;
+  const asic = `Dollars per task, ${millions(central.as_written.nre_usd)} NRE (new chip)`;
+  const share = central.fabric.gpu_share;
   const series: Series[] = [
     {
       key: "energy",
@@ -22,13 +29,13 @@ export function AmdahlPlot() {
     },
     {
       key: "fabric",
-      label: "Dollars per task, $3M NRE (via fabric)",
+      label: fabric,
       color: "var(--blue)",
       points: curve.map((p) => ({ x: p.share, y: p.dollars_x_fabric })),
     },
     {
       key: "asic",
-      label: "Dollars per task, $40M NRE (new chip)",
+      label: asic,
       color: "var(--blue)",
       dashed: true,
       points: curve.map((p) => ({ x: p.share, y: p.dollars_x_asic })),
@@ -62,23 +69,26 @@ export function AmdahlPlot() {
         }}
         y={{ type: "log", domain: [1, 10000], format: xTick }}
         height={320}
-        hlines={[{ y: 1000, label: "1000x target" }]}
-        vlines={[{ x: 0.0005, label: "Central case, 0.05%" }]}
+        hlines={[{ y: TARGET, label: `${TARGET}x target` }]}
+        vlines={[{ x: share, label: `Central case, ${percent(share)}` }]}
         markers={[
-          ...mark(0.0005, "end", 18),
+          ...mark(share, "end", 18),
           ...mark(0.001, "start", -10),
           ...mark(0.01, "start", -10),
           ...mark(0.05, "start", -10),
         ]}
         readout={(x) => `${percent(x)} of tasks on GPUs`}
         value={(y) => times(y)}
-        ariaLabel="Line chart: the central case's gain per task falls as more tasks fall back to GPUs. 749x energy at 0.05%, 545x at 0.1%, 92x at 1%, 20x at 5%. The table below the chart lists the values."
+        ariaLabel={`Line chart: the central case's gain per task falls as more tasks fall back to GPUs. ${amdahl.recorded
+          .filter((r) => r.share > 0)
+          .map((r) => `${times(r.energy_x)} energy at ${percent(r.share)}`)
+          .join(", ")}. The table below the chart lists the values.`}
       />
       <Legend
         items={[
           { label: "Energy per task", color: "var(--accent-mark)" },
-          { label: "Dollars per task, $3M NRE (via fabric)", color: "var(--blue)" },
-          { label: "Dollars per task, $40M NRE (new chip)", color: "var(--blue)", kind: "dash" },
+          { label: fabric, color: "var(--blue)" },
+          { label: asic, color: "var(--blue)", kind: "dash" },
           { label: "Ceiling: 1 / share", color: "var(--neutral-mark)", kind: "dash" },
         ]}
       />
@@ -97,9 +107,11 @@ export function SpwPlot() {
   }));
   const big = spw.layers.at(-1);
   const best = big?.points.reduce((a, b) => (b.saving > a.saving ? b : a));
+  // The layer that was also synthesized: the featured shared-partial-sum design in gates.json.
+  const made = gates.designs.find((d) => d.kind === "spw" && d.featured !== null);
   const synth = spw.layers
-    .find((l) => l.inputs === 48 && l.outputs === 256)
-    ?.points.find((p) => p.group === 4);
+    .find((l) => l.inputs === made?.inputs && l.outputs === made?.outputs)
+    ?.points.find((p) => p.group === made?.group);
   return (
     <>
       <LineChart
@@ -129,9 +141,9 @@ export function SpwPlot() {
           ...(synth
             ? [
                 {
-                  x: 4,
+                  x: synth.group,
                   y: synth.saving,
-                  label: `${synth.saving}x, the synthesized layer`,
+                  label: `${synth.saving}x, synthesized`,
                   color: "var(--ord-2)",
                   anchor: "start" as const,
                   dy: 18,
@@ -141,7 +153,7 @@ export function SpwPlot() {
         ]}
         readout={(x) => `Groups of ${x} inputs`}
         value={(y) => `${y}x fewer adds`}
-        ariaLabel="Line chart: shared partial sums save more adds on wider layers. Best is 2.85x for a 4096 by 4096 layer at groups of 6; 2.02x for the synthesized 48 by 256 layer at groups of 4. The table below lists every value."
+        ariaLabel={`Line chart: shared partial sums save more adds on wider layers. Best is ${best?.saving}x for a ${big?.inputs} by ${big?.outputs} layer at groups of ${best?.group}; ${synth?.saving}x for the synthesized ${made?.inputs} by ${made?.outputs} layer at groups of ${made?.group}. The table below lists every value.`}
       />
       <Legend items={series.map((s) => ({ label: s.label, color: s.color }))} />
     </>
@@ -166,7 +178,7 @@ export function BatchPlot() {
           type: "log",
           domain: [1, 10000],
           format: (v) => v.toLocaleString("en-US"),
-          label: "Batch: sequences sharing each weight read (log scale)",
+          label: "Batch (sequences per weight read, log scale)",
         }}
         y={{
           type: "log",
@@ -174,18 +186,22 @@ export function BatchPlot() {
           format: (v) => `${v >= 1 ? v.toLocaleString("en-US") : Number(v.toPrecision(1))} J`,
         }}
         height={300}
-        hlines={[{ y: math, label: `Arithmetic: ${Number(math.toPrecision(2))} J per token` }]}
+        hlines={[
+          { y: math, label: `Arithmetic: ${Number(math.toPrecision(2))} J per token`, below: true },
+        ]}
+        // All above the line, at two heights in turn: side by side, neighbours ran together on a
+        // phone, and a label below it covered the line's own label.
         markers={decode.batch.series.map((s, i) => ({
           x: s.crossover_batch,
           y: math,
           label: `${Math.round(s.crossover_batch)}`,
           color: colors[i] ?? "var(--blue)",
           anchor: "middle" as const,
-          dy: 20,
+          dy: i % 2 === 0 ? -11 : -25,
         }))}
         readout={(x) => `Batch ${Math.round(x).toLocaleString("en-US")}`}
         value={(y) => `${y >= 0.01 ? Number(y.toPrecision(3)) : y.toExponential(1)} J`}
-        ariaLabel={`Line chart: per-token weight-read energy for a dense 70B model falls with batch size until it meets the arithmetic energy of ${Number(math.toPrecision(2))} J, at a batch of about 180 for 16-bit weights, 90 for 8-bit, 45 for 4-bit and 18 for 1.58-bit.`}
+        ariaLabel={`Line chart: per-token weight-read energy for a ${decode.batch.model.toLowerCase()} model falls with batch size until it meets the arithmetic energy of ${Number(math.toPrecision(2))} J, at a batch of about ${decode.batch.series.map((s) => `${Math.round(s.crossover_batch)} for ${s.label}`).join(", ")}.`}
       />
       <Legend
         items={[

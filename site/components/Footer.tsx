@@ -24,7 +24,8 @@ export function Footer() {
               {PAGES.map((p) => (
                 <li key={p.href}>
                   <Link href={p.href}>
-                    <span className="mono">{p.n}</span> {p.label}
+                    <span className="mono">{p.n}</span>
+                    <span>{p.label}</span>
                   </Link>
                 </li>
               ))}

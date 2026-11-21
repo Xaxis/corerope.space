@@ -9,7 +9,7 @@ type Tip = { x: number; y: number; title: string; value: string; detail: string 
  * data-tip-title, data-tip-detail) shows a tooltip above itself. Values are set as text, never HTML.
  * The tooltip only repeats what the chart's table and labels already give.
  */
-export function TipLayer({ children, className }: { children: ReactNode; className?: string }) {
+export function TipLayer({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const [tip, setTip] = useState<Tip>(null);
   const show = useCallback((target: EventTarget | null) => {
@@ -34,16 +34,20 @@ export function TipLayer({ children, className }: { children: ReactNode; classNa
     // biome-ignore lint/a11y/noStaticElementInteractions: hover and focus only enhance; every value is in the table view
     <div
       ref={ref}
-      className={className}
       style={{ position: "relative" }}
       onPointerOver={(e) => show(e.target)}
       onPointerLeave={() => setTip(null)}
       onFocus={(e) => show(e.target)}
       onBlur={() => setTip(null)}
+      // WCAG 1.4.13: what appears on hover or focus can be dismissed without moving.
+      onKeyDown={(e) => {
+        if (e.key === "Escape") setTip(null);
+      }}
     >
       {children}
+      {/* Hidden from screen readers: each mark's own label already says all of this. */}
       {tip && (
-        <div className="tip" style={{ left: tip.x, top: tip.y }} role="status">
+        <div className="tip" style={{ left: tip.x, top: tip.y }} aria-hidden="true">
           <b>{tip.value}</b>
           {tip.title && <span>{tip.title}</span>}
           {tip.detail && <span style={{ display: "block", opacity: 0.8 }}>{tip.detail}</span>}

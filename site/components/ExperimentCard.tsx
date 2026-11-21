@@ -39,7 +39,9 @@ export function ExperimentCard({ e, links = true }: { e: Experiment; links?: boo
             In the cost model, with {fail.change} and the rest central: <b>{times(fail.energy)}</b>{" "}
             less energy and <b>{times(fail.usd)}</b> lower cost per solved task, against{" "}
             {times(fail.central.energy)} and {times(fail.central.usd)}.{" "}
-            <Link href={fail.href}>Open this case</Link>
+            <Link href={fail.href} className="nowrap">
+              Open this case
+            </Link>
           </p>
         )}
         {links && e.inventions.length > 0 && (

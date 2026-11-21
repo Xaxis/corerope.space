@@ -190,9 +190,7 @@ try {
   await pause.click();
   check(
     "the pause button stops the animation",
-    (await hero
-      .getByRole("button", { name: "Play the animation" })
-      .getAttribute("aria-pressed")) === "true",
+    (await pause.getAttribute("aria-pressed")) === "true",
   );
 
   // The story: scrolling a step to the middle of the screen makes it the active one.
@@ -357,7 +355,7 @@ try {
   const released = (await page.locator(`${storageStage} canvas`).count()) === 0;
   await page.locator(storageStage).evaluate((el) => el.scrollIntoView({ block: "center" }));
   await ready(storageStage);
-  const replay = page.locator(storageStage).getByRole("button", { name: "Play the animation" });
+  const replay = page.locator(storageStage).getByRole("button", { name: "Pause the animation" });
   check(
     "a paused stage is still paused when it is rebuilt",
     released &&
@@ -394,9 +392,13 @@ try {
     `step top ${Math.round(stepTop)}, stage bottom ${Math.round(stageBottom)}`,
   );
   await phone.evaluate(() => window.scrollTo(0, 0));
-  await phone.getByRole("button", { name: "Open the menu" }).click();
+  const menuButton = phone.getByRole("button", { name: "Menu" });
+  await menuButton.click();
   const menu = phone.locator("#mobile-nav");
-  check("the phone menu opens", await menu.isVisible());
+  check(
+    "the phone menu opens",
+    (await menu.isVisible()) && (await menuButton.getAttribute("aria-expanded")) === "true",
+  );
   await menu.getByRole("link", { name: "Experiments" }).click();
   await phone.waitForURL(`${base}/experiments`);
   await menu.waitFor({ state: "hidden", timeout: 3000 }).catch(() => {});

@@ -71,9 +71,9 @@ export function RangeRows({
           const lo = r.low ?? r.central;
           const hi = r.high ?? r.central;
           const right = Math.max(hi, r.central);
-          // The value goes right of the whisker if it fits, else left of it, else above the dot.
-          const place =
-            x(right) < 0.86 ? "right" : x(Math.min(lo, r.central)) > 0.12 ? "left" : "above";
+          // The value goes right of the whisker if it fits, else above the dot. (Left of the whisker
+          // put it beside the pessimistic end, where "749x" read as the low value.)
+          const place = x(right) < 0.86 ? "right" : "above";
           const range =
             r.low != null && r.high != null ? ` (range ${format(r.low)} to ${format(r.high)})` : "";
           return (
@@ -83,7 +83,7 @@ export function RangeRows({
                 {r.label}
                 {r.sublabel && <small>{r.sublabel}</small>}
               </div>
-              <div className="row-track">
+              <div className={place === "above" ? "row-track row-track-tall" : "row-track"}>
                 <svg aria-hidden="true">
                   {ticks.map((t) => (
                     <line
@@ -147,17 +147,12 @@ export function RangeRows({
                     strokeWidth="2"
                   />
                   <text
-                    x={pc(
-                      place === "right"
-                        ? x(right)
-                        : place === "left"
-                          ? x(Math.min(lo, r.central))
-                          : x(r.central),
-                    )}
-                    dx={place === "right" ? 10 : place === "left" ? -10 : 0}
+                    x={pc(place === "right" ? x(right) : x(r.central))}
+                    // Clear of the dot's ring when no whisker runs past it ("420x" touched it).
+                    dx={place === "right" ? (right > r.central ? 10 : 14) : 0}
                     y="50%"
                     dy={place === "above" ? -10 : "0.35em"}
-                    textAnchor={place === "right" ? "start" : place === "left" ? "end" : "middle"}
+                    textAnchor={place === "right" ? "start" : "middle"}
                     className={r.emphasis ? "strong" : "ink2"}
                     style={{
                       fill: r.emphasis ? "var(--ink)" : "var(--ink-2)",

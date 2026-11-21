@@ -49,8 +49,9 @@ right of the text, cores flash) and a story section (the stage sits beside the a
 
 ## Gotchas
 
-- Stages load three.js lazily when they near the viewport. A full-page shot (shots.ts) shows the
-  stages below the fold dark; use peek, which scrolls each section into view and waits.
+- Stages load three.js lazily when they near the viewport. shots.ts shows every stage dark (it
+  resizes the page to capture it, and no stage has drawn yet); use story.ts or peek, which scroll
+  each section into view and wait.
 - Story steps are picked by an IntersectionObserver on a thin band at mid-screen; a step scrolled
   only to the top of the screen is not active yet.
 - The stage is always dark (#0b0a09), in both themes, by design.

@@ -2,7 +2,7 @@
 
 The seven parts of the Corerope stack on one page: where the remaining 1000x hides, then each part
 with its summary, how it could fail, its falsification experiment (or a visible TODO), and its
-evidence, six of them with WebGL scenes (four of those with a step picker).
+evidence. The page has seven WebGL stages, four of them with a step picker.
 
 <!-- covers: page:/design, page:/design/:slug -->
 
@@ -13,10 +13,14 @@ evidence, six of them with WebGL scenes (four of those with a step picker).
 - subnav: sticky chips for the overview and the seven parts, with the current one marked.
 - `#where`: the headroom table and the energy ladder.
 - one split chapter per part (`#split-mind`, `#wired-ternary`, `#rom-core`, `#lookup-in-storage`,
-  `#tokens-per-task`, `#context-cartridges`, `#two-tier-fleet`): the summary, a "Why it could fail"
+  `#tokens-per-task`, `#context-cartridges`, `#two-tier-fleet`): the summary (for a stepped part,
+  less the sentences its first step shows under the stage: FIRST_STEP in page.tsx), a "Why it could fail"
   style quote (RISK in site/app/design/page.tsx), the experiment cards from data/roadmap.json, and
   the evidence: the fleet scene (split mind), the corerope scene (ROM core), gate and SPW charts,
-  the tokens chart, the Amdahl control with the fleet scene, and the fleet diagram.
+  the tokens chart (with a key: accent bars have an index score in the note, grey ones do not),
+  the Amdahl control with the fleet scene, and the fleet diagram (it stacks whenever its own box
+  is under 820 px wide, so in this page's column too). A list or table a part spells out keeps its
+  bold lead-in ("The training contract.").
 - stepped scenes (site/components/StageSteps.tsx): a stage with a radio picker ("Show in the
   scene") and, under it, the research's words for the chosen step (`.stage-steps-body`,
   aria-live). Wired ternary (3 steps, `wired`), lookup-in-storage (3, `storage`: every row
@@ -24,7 +28,8 @@ evidence, six of them with WebGL scenes (four of those with a step picker).
   RL prunes the hot beads, a compiled skill folds a stretch into a cube, latent runs turn blue with
   white checkpoints), context cartridges (3, `cartridges`: re-reading the corpus, a cartridge docks
   and the state ring fills at once, snapshots on a session timeline). The three new scenes carry
-  "An illustration of the mechanism: the counts and lengths in the scene are not data."
+  "An illustration of the mechanism: the counts and lengths in the scene are not data." On a phone
+  the picker is two even columns, an odd last step spanning both.
 - stage lifetime (site/components/three/Stage.tsx): a stage starts within 400px of the screen and
   is released (canvas removed, WebGL context given back) beyond 1600px, so this page of seven
   stages holds only the near ones.

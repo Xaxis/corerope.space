@@ -1,15 +1,20 @@
 // From paperwright.diy tools/site/shots.ts @ 352b780 blob f6072dc66191 (itself from Cutwright);
-// adapted: corerope.space's pages, and a page's charts must render. Shots of the site's pages to look at, and what a page must pass on a phone
-// (tools/site/deploy.sh runs it on the live site; run it on a local server before a deploy): each
-// page answering 200 (or 404 for the missing page), shot whole at 1440 and at 390 px wide, light
-// and dark. At neither width may anything scroll sideways: the page is no wider than the window,
-// and at 390 px every block keeps a side gutter. Each is
-// checked by axe against WCAG 2.2 A and AA, and a serious or critical finding fails it.
+// adapted: corerope.space's pages, segmented captures. Shots of the site's pages to look at, and
+// what a page must pass (tools/site/deploy.sh runs it on the live site; run it on a local server
+// before a deploy): each page answering 200 (or 404 for the missing page), shot whole at 1440 and
+// at 390 px wide, light and dark. At neither width may anything scroll sideways: the page is no
+// wider than the window, and at 390 px every block keeps a side gutter. Each is checked by axe
+// against WCAG 2.2 A and AA, and a serious or critical finding fails it, as does anything the
+// Content-Security-Policy refuses.
+//
+// A page is captured in segments of SEGMENT px, written <page>-<width>-<scheme>-<n>.png from the
+// top (one segment: no -<n>). A single full-page capture wraps under SwiftShader past 8,192 px:
+// everything below repeated the top of the page, so half of every long page went unseen.
 //
 //   ~/.claude/claude-core/bin/heavy node tools/site/shots.ts --url URL [--out DIR] [--only /a,/b]
 //
 // Chromium stays on SwiftShader (CHROMIUM_ARGS). Prints JSON last: each page, its status, its
-// width at 390 px and its shots. Exits 1 when a page answers wrongly or scrolls sideways.
+// width at 390 px and its shots. Exits 1 on any of the failures above.
 import { mkdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
@@ -18,6 +23,9 @@ import { axeViolations, fails } from "../lib/axe.ts";
 import { CHROMIUM_ARGS } from "../lib/chromium.ts";
 import { touchingEdges } from "../lib/gutter.ts";
 
+/** Tall enough to read a section, well under the 8,192 px at which a capture wraps. */
+const SEGMENT = 4000;
+
 const { values } = parseArgs({
   options: { url: { type: "string" }, out: { type: "string" }, only: { type: "string" } },
 });
@@ -25,13 +33,13 @@ const root = resolve(import.meta.dirname, "../..");
 const out = resolve(values.out ?? join(root, "out/site-shots"));
 mkdirSync(out, { recursive: true });
 if (values.url === undefined) {
-  console.error("usage: node tools/site/shots.ts --url URL [--out DIR]");
+  console.error("usage: node tools/site/shots.ts --url URL [--out DIR] [--only /a,/b]");
   process.exit(2);
 }
 const base = values.url.replace(/\/$/, "");
 
-/** The site's public pages, with the status each must answer. */
-export const PAGES: Array<[string, number]> = [
+/** The site's public pages, every research document included, with the status each must answer. */
+const PAGES: Array<[string, number]> = [
   ["/", 200],
   ["/survey", 200],
   ["/design", 200],
@@ -40,6 +48,11 @@ export const PAGES: Array<[string, number]> = [
   ["/research", 200],
   ["/research/path-to-1000x", 200],
   ["/research/corerope-design", 200],
+  ["/research/quantization-numerics", 200],
+  ["/research/moe-conditional-compute", 200],
+  ["/research/attention-kv-cache", 200],
+  ["/research/decoding-test-time", 200],
+  ["/research/distillation-cost-trends", 200],
   ["/research/hardware-systems", 200],
   ["/research/results", 200],
   ["/no-such-page", 404],
@@ -61,10 +74,14 @@ try {
       ["mobile", 390, 844],
     ] as const) {
       for (const scheme of ["light", "dark"] as const) {
+        // Reduced motion: each 3D stage draws one still frame instead of animating, so a capture
+        // does not wait on every stage of a long page rendering at once under SwiftShader (the
+        // animation itself is checked by interact.ts).
         const context = await browser.newContext({
           viewport: { width, height },
           colorScheme: scheme,
           deviceScaleFactor: 1,
+          reducedMotion: "reduce",
         });
         const page = await context.newPage();
         // Anything the Content-Security-Policy refused (site/next.config.ts).
@@ -113,9 +130,19 @@ try {
         });
         for (const v of (await axeViolations(page)).filter(fails))
           problems.push(`${path} ${label} ${scheme}: axe ${v.id} at ${v.targets.join(", ")}`);
-        const file = join(out, `${name}-${label}-${scheme}.png`);
-        await page.screenshot({ path: file, fullPage: true });
-        shots.push(file);
+        const tall = await page.evaluate(() => document.documentElement.scrollHeight);
+        const parts = Math.ceil(tall / SEGMENT);
+        for (let k = 0; k < parts; k++) {
+          const y = k * SEGMENT;
+          const file = join(out, `${name}-${label}-${scheme}${parts > 1 ? `-${k + 1}` : ""}.png`);
+          await page.screenshot({
+            path: file,
+            fullPage: true,
+            clip: { x: 0, y, width, height: Math.min(SEGMENT, tall - y) },
+            timeout: 120_000,
+          });
+          shots.push(file);
+        }
         await context.close();
       }
     }

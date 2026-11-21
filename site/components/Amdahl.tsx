@@ -5,6 +5,7 @@
 // fleet's energy follows from them: a share f at baseline cost, out of a total of 1 / gain.
 import amdahl from "@data/amdahl.json";
 import { useId, useState } from "react";
+import { central } from "@/lib/presets";
 import { percent, times } from "@/lib/scale";
 import { StoryChapter, type StoryStep } from "./Story";
 import { Stage } from "./three/Stage";
@@ -14,7 +15,7 @@ export const STOPS = amdahl.recorded.map((r) => ({
   gain: r.energy_x,
   gpuEnergy: r.share * r.energy_x,
 }));
-const CENTRAL = STOPS.findIndex((s) => s.share === 0.0005);
+const CENTRAL = STOPS.findIndex((s) => s.share === central.fabric.gpu_share);
 
 export function AmdahlControl({
   index,

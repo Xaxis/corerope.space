@@ -12,6 +12,7 @@ import {
   STEPS,
   toPosition,
 } from "@/lib/costmodel";
+import { millions } from "@/lib/presets";
 import { pc, percent, scale, times } from "@/lib/scale";
 import { StackBar } from "./charts/Bars";
 
@@ -19,16 +20,19 @@ type Scenario = "fabric" | "as_written";
 type Presets = Record<Scenario, [Params, Params, Params]>;
 
 const CASES = ["Pessimistic", "Central", "Optimistic"] as const;
-const SCENARIOS: { key: Scenario; label: string; help: string }[] = [
+/** Each scenario, described with its central case's own NRE and GPU share. */
+const SCENARIOS: { key: Scenario; label: string; help: (p: Params) => string }[] = [
   {
     key: "fabric",
     label: "Via-programmed fabric",
-    help: "The design doc's headline: one via mask per model (~$3M NRE) and 0.05% GPU fallback.",
+    help: (p) =>
+      `The design doc's headline: one via mask per model (~${millions(p.nre_usd)} NRE) and ${percent(p.gpu_share)} GPU fallback.`,
   },
   {
     key: "as_written",
     label: "New chip per model",
-    help: "S as written in costmodel.py: a full mask set per model (~$40M NRE) and 0.1% GPU fallback.",
+    help: (p) =>
+      `S as written in costmodel.py: a full mask set per model (~${millions(p.nre_usd)} NRE) and ${percent(p.gpu_share)} GPU fallback.`,
   },
 ];
 const KEYS = PARAMS.map((p) => p.key);
@@ -196,7 +200,7 @@ export function Calculator({ presets }: { presets: Presets }) {
                 key={s.key}
                 type="button"
                 aria-pressed={scenario === s.key}
-                title={s.help}
+                title={s.help(presets[s.key][1])}
                 onClick={() => choose(s.key, base)}
               >
                 {s.label}
@@ -225,7 +229,9 @@ export function Calculator({ presets }: { presets: Presets }) {
           </button>
         )}
       </div>
-      <p className="calc-scenario-help">{SCENARIOS.find((s) => s.key === scenario)?.help}</p>
+      <p className="calc-scenario-help">
+        {SCENARIOS.find((s) => s.key === scenario)?.help(presets[scenario][1])}
+      </p>
 
       <div className="calc-grid">
         <div className="calc-inputs">
@@ -240,7 +246,9 @@ export function Calculator({ presets }: { presets: Presets }) {
                   <div key={spec.key} className={`calc-param${changed ? " changed" : ""}`}>
                     <div className="calc-param-head">
                       <label htmlFor={id}>{spec.label}</label>
-                      <output htmlFor={id}>{spec.format(v)}</output>
+                      <output htmlFor={id}>
+                        <Value text={spec.format(v)} />
+                      </output>
                     </div>
                     <input
                       id={id}
@@ -249,7 +257,7 @@ export function Calculator({ presets }: { presets: Presets }) {
                       max={STEPS}
                       step={1}
                       value={toPosition(spec, v)}
-                      aria-valuetext={spec.format(v)}
+                      aria-valuetext={spoken(spec.format(v))}
                       aria-describedby={`${id}-help`}
                       onChange={(e) => set(spec.key, fromPosition(spec, Number(e.target.value)))}
                     />
@@ -259,7 +267,7 @@ export function Calculator({ presets }: { presets: Presets }) {
                         <>
                           {" "}
                           <span className="calc-was">
-                            {CASES[base]}: {spec.format(preset[spec.key])}.
+                            {CASES[base]}: <Value text={spec.format(preset[spec.key])} />.
                           </span>
                         </>
                       )}
@@ -280,7 +288,11 @@ export function Calculator({ presets }: { presets: Presets }) {
           </div>
         </div>
 
-        <div className="calc-out" aria-live="polite">
+        <div className="calc-out">
+          {/* What a screen reader hears as a slider moves: the answer, not all four tiles again. */}
+          <p className="visually-hidden" aria-live="polite">
+            {`Energy per task ${times(r.energy_x_per_task)}, cost per task ${times(r.usd_x_per_task)}.`}
+          </p>
           <div className="calc-out-inner">
             <p className="calc-out-title">Against B2026, with these assumptions</p>
             <div className="calc-tiles">
@@ -350,4 +362,21 @@ export function Calculator({ presets }: { presets: Presets }) {
       </div>
     </div>
   );
+}
+
+/** A value as the model formats it, with a power of ten set as a superscript ("3 × 10^16"). */
+function Value({ text }: { text: string }) {
+  const m = /^(.*)10\^(\d+)$/.exec(text);
+  return m ? (
+    <>
+      {m[1]}10<sup>{m[2]}</sup>
+    </>
+  ) : (
+    text
+  );
+}
+
+/** The same value as a screen reader should say it. */
+function spoken(text: string): string {
+  return text.replace(/×/g, "times").replace(/10\^(\d+)/, "10 to the $1");
 }

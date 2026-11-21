@@ -1,29 +1,17 @@
-import { blobUrl, editUrl, type Repo } from "@/lib/site";
+import { blobUrl, editUrl, type Repo, whereLabel } from "@/lib/site";
 
-/** "From research/x.md, lines a to b": view those lines on GitHub, or edit the file. */
-export function SourceLink({
-  path,
-  startLine,
-  endLine,
-  label = "Source",
-}: Repo & { label?: string }) {
-  const where =
-    startLine === undefined
-      ? ""
-      : endLine && endLine !== startLine
-        ? `, lines ${startLine} to ${endLine}`
-        : `, line ${startLine}`;
+/** "Source: research/x.md, lines a to b (edit on GitHub)": view those lines, or edit the file. */
+export function SourceLink({ path, startLine, endLine }: Repo) {
   return (
     <p className="source-link">
-      <span className="source-label">{label}:</span>{" "}
+      <span className="source-label">Source:</span>{" "}
       <a href={blobUrl({ path, startLine, endLine })} className="mono">
-        {path}
-        {where}
-      </a>
-      <span className="source-sep" aria-hidden="true">
-        {" · "}
+        {whereLabel({ path, startLine, endLine })}
+      </a>{" "}
+      {/* One unit, so a wrapped line never starts or ends on a lone bracket. */}
+      <span className="nowrap">
+        (<a href={editUrl(path)}>edit on GitHub</a>)
       </span>
-      <a href={editUrl(path)}>Edit on GitHub</a>
     </p>
   );
 }

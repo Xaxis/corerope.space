@@ -22,6 +22,8 @@ and the scripts.
 - `#gaps`: the four known gaps from 00-BRIEF.md as gap callouts.
 - `#open`: each note's Gaps sections in details blocks.
 - `#program`: the survey's four-phase GPU program. `#prior`: prior art. `#scripts`: the scripts.
+- the research text in `#risks`, `#open`, `#program` and `#prior` is set in the page's sans face
+  (`prose prose-sans`), not the library's serif.
 - old address: /risks redirects (308) to /experiments#risks.
 
 ## How to reach it

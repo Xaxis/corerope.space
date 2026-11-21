@@ -13,6 +13,7 @@ import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
+import type { Repo } from "./site";
 
 /** The repository root. The site builds from site/, with the research beside it. */
 export const REPO_ROOT = (() => {
@@ -34,17 +35,23 @@ export type Doc = {
   short: string;
 };
 
+/** The files the pages quote most, named once. */
+export const BRIEF = "00-BRIEF.md";
+export const SURVEY = "research/01-report-path-to-1000x.md";
+export const DESIGN = "research/02-corerope-design.md";
+export const RESULTS = "experiments/RESULTS.md";
+
 /** Every research document the site renders in full, at /research/<slug>. */
 export const DOCS: Doc[] = [
   {
     slug: "path-to-1000x",
-    file: "research/01-report-path-to-1000x.md",
+    file: SURVEY,
     kind: "survey",
     short: "The survey",
   },
   {
     slug: "corerope-design",
-    file: "research/02-corerope-design.md",
+    file: DESIGN,
     kind: "design",
     short: "The design",
   },
@@ -84,14 +91,8 @@ export const DOCS: Doc[] = [
     kind: "note",
     short: "Hardware and serving",
   },
-  { slug: "results", file: "experiments/RESULTS.md", kind: "results", short: "Recorded results" },
+  { slug: "results", file: RESULTS, kind: "results", short: "Recorded results" },
 ];
-
-export function docBySlug(slug: string): Doc {
-  const d = DOCS.find((x) => x.slug === slug);
-  if (!d) throw new Error(`content: no document ${slug}`);
-  return d;
-}
 
 export function docByFile(file: string): Doc | undefined {
   return DOCS.find((x) => x.file === file);
@@ -115,6 +116,11 @@ export function parse(file: string): Root {
 }
 
 /** A run of a file's top-level nodes, and the lines it spans. */
+/** Where a section sits in its file, as a source link takes it. */
+export function sourceOf(s: Section): Repo {
+  return { path: s.file, startLine: s.startLine, endLine: s.endLine };
+}
+
 export type Section = {
   file: string;
   title: string;
@@ -196,42 +202,18 @@ export function summaryOf(file: string): string {
   const fromLead = firstParagraph(lead(file));
   if (fromLead) return fromLead;
   const t = sectionsNamed(file, "Takeaway")[0];
-  return t ? firstParagraph(t) : "";
+  if (t && firstParagraph(t)) return firstParagraph(t);
+  // A file with no prose (the recorded results are headings over code blocks): name its sections.
+  const parts = parse(file)
+    .children.filter((n): n is Heading => n.type === "heading" && n.depth === 2)
+    .map((h) => mdToString(h));
+  return parts.length ? `${parts.join(". ")}.` : "";
 }
 
 /** The whole document, title excluded. */
 export function whole(file: string): Section {
   const nodes = parse(file).children.filter((n) => !(n.type === "heading" && n.depth === 1));
   return { file, title: docTitle(file), nodes, ...lines(file, nodes) };
-}
-
-/** The subsections of a section at the next heading level down, each with its own lines. */
-export function subsections(s: Section): Section[] {
-  const depth = (s.heading?.depth ?? 1) + 1;
-  const out: Section[] = [];
-  let current: RootContent[] | null = null;
-  let heading: Heading | null = null;
-  const flush = () => {
-    if (current && heading)
-      out.push({
-        file: s.file,
-        title: mdToString(heading),
-        heading,
-        nodes: current,
-        ...lines(s.file, current),
-      });
-  };
-  for (const n of s.nodes) {
-    if (n.type === "heading" && n.depth === depth) {
-      flush();
-      heading = n;
-      current = [n];
-    } else if (current) {
-      current.push(n);
-    }
-  }
-  flush();
-  return out;
 }
 
 /** Plain text of a run of nodes (for descriptions and word counts). */
@@ -334,24 +316,6 @@ export function citations(file: string): Citation[] {
   };
   walk(parse(file));
   return out;
-}
-
-/**
- * A paragraph up to (not including) the sentence that starts with `phrase`: for a source like the
- * brief, whose story is followed by instructions about the story in the same paragraph.
- */
-export function upTo(node: RootContent, phrase: string): RootContent {
-  if (node.type !== "paragraph")
-    throw new Error(`content: upTo needs a paragraph, not ${node.type}`);
-  const children: typeof node.children = [];
-  for (const c of node.children) {
-    if (c.type === "text" && c.value.includes(phrase)) {
-      children.push({ ...c, value: c.value.slice(0, c.value.indexOf(phrase)).trimEnd() });
-      return { ...node, children };
-    }
-    children.push(c);
-  }
-  throw new Error(`content: no "${phrase}" in the paragraph`);
 }
 
 export type Quote = { text: string; file: string; line: number };

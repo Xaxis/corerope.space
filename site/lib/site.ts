@@ -12,7 +12,19 @@ export const SITE = {
 /** The build marker: the commit this site was built from (tools/site/deploy.sh sets it). */
 export const BUILD = process.env.CORE_BUILD ?? "dev";
 
+/** The program's goal, the 1000x in its question: every target line on a chart. */
+export const TARGET = 1000;
+
 export type Repo = { path: string; startLine?: number; endLine?: number };
+
+/** "research/x.md, lines a to b" (or "line a", or the path alone): how a source link reads. */
+export function whereLabel({ path, startLine, endLine }: Repo): string {
+  if (startLine === undefined) return path;
+  // Non-breaking inside the range: "lines 194 to" never ends a line with "200" alone below it.
+  return endLine && endLine !== startLine
+    ? `${path}, lines\u00a0${startLine}\u00a0to\u00a0${endLine}`
+    : `${path}, line\u00a0${startLine}`;
+}
 
 /** A file in the repository on GitHub, optionally at a range of lines. */
 export function blobUrl({ path, startLine, endLine }: Repo): string {

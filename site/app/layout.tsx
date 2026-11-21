@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   title: { default: `${SITE.name}: ${SITE.tagline}`, template: `%s · ${SITE.name}` },
   description: SITE.description,
   applicationName: SITE.name,
-  openGraph: { type: "website", siteName: SITE.name, locale: "en_US", url: "/" },
+  openGraph: { type: "website", siteName: SITE.name, locale: "en_US" },
   twitter: { card: "summary_large_image" },
   alternates: { canonical: "/" },
   other: { "corerope-build": BUILD },

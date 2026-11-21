@@ -286,15 +286,6 @@ export function uAtX(curve: THREE.Curve<THREE.Vector3>, x: number, samples = 120
   return best;
 }
 
-export function webglAvailable(): boolean {
-  try {
-    const c = document.createElement("canvas");
-    return !!(c.getContext("webgl2") || c.getContext("webgl"));
-  } catch {
-    return false;
-  }
-}
-
 /** Mounts a scene into `host` and runs it. Throws if WebGL is unavailable. */
 export function mount(
   host: HTMLElement,

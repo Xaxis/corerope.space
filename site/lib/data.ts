@@ -12,7 +12,6 @@ import multipliers from "@data/multipliers.json";
 import roadmap from "@data/roadmap.json";
 import spw from "@data/spw.json";
 import tokensPerTask from "@data/tokens-per-task.json";
-import type { Params } from "./costmodel";
 
 export {
   amdahl,
@@ -30,11 +29,11 @@ export {
 
 export type Provenance = { script: string; sources: string[]; about: string };
 
-/** The three cases of a scenario as parameter sets: 0 pessimistic, 1 central, 2 optimistic. */
-export function presets(scenario: "fabric" | "as_written"): [Params, Params, Params] {
-  const pick = (i: number) =>
-    Object.fromEntries(
-      costmodel.params.map((p) => [p.key, (p[scenario] as number[])[i]]),
-    ) as Params;
-  return [pick(0), pick(1), pick(2)];
+/** The survey's overlap-adjusted total for a baseline, per solved task, central case. */
+export function leverTotal(b: "b2024" | "b2026", what: "cost" | "energy"): number {
+  const r = levers.budgets[b].rows.find(
+    (x) => x.kind === "total" && !x.naive && x.label.includes(what),
+  );
+  if (!r || r.central === null) throw new Error(`data: levers.json has no ${what} total for ${b}`);
+  return r.central;
 }

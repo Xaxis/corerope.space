@@ -43,7 +43,7 @@ export function Header() {
             className="icon-btn menu-btn"
             aria-expanded={open}
             aria-controls="mobile-nav"
-            aria-label={open ? "Close the menu" : "Open the menu"}
+            aria-label="Menu"
             onClick={() => setOpen((o) => !o)}
           >
             <svg

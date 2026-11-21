@@ -23,8 +23,8 @@ description: Verify corerope.space (a static Next.js site rendered from research
 |---|---|---|---|
 | typecheck | `pnpm typecheck` | route types and TypeScript across site/ | passes, 2s |
 | lint | `pnpm lint` (= `make lint`) | Biome over site/ and tools/, and no em dash in any tracked file | passes, 1s |
-| test | `pnpm test` (= `make test`) | the TS cost model equals costmodel.py on every golden output (`Object.is`), presets, Amdahl cap; every 3D scene builds and runs every step with finite geometry (test/scenes.test.ts); the experiment failure cases read their values from the doc (test/failures.test.ts); the source index keeps every link and citing line (test/sources.test.ts) | passes, 29 tests, 5s |
-| build | `heavy pnpm build` | all 31 routes render statically from research/ and data/ | passes, about 30s |
+| test | `pnpm test` (= `make test`) | the TS cost model equals costmodel.py on every golden output (`Object.is`), presets, Amdahl cap; every 3D scene builds and runs every step with finite geometry (test/scenes.test.ts); the experiment failure cases read their values from the doc (test/failures.test.ts); the source index keeps every link and citing line (test/sources.test.ts); the research renderer's superscripts, chips, unbreakable tokens, figure boxes and table sizing, with no word changed (test/markdown.test.ts) | passes, 35 tests, 5s |
+| build | `heavy pnpm build` | all 23 routes render statically from research/ and data/ | passes, about 30s |
 | make check | `heavy make check` | costmodel.py output equals RESULTS.md; SPW ratios and 15 Yosys gate counts reproduce; then `pnpm test` | passes (3 ok, none skipped once `make venv synth data` ran), about 10s |
 
 Under `heavy`, add queue wait when the box is busy (minutes on 2026-11-20).
@@ -61,9 +61,14 @@ this run started. If the page is stale, the server is serving an older build: re
 ## Drive
 
 - **Every page, both themes, both widths:** `heavy node tools/site/shots.ts --url http://localhost:4317 --out out/shots`
-  (exit 0: all 20 routes answer as listed, no sideways scroll at 390 px, no serious or critical axe
-  findings in light or dark). Add `--only /cost-model` for one page. Then look at the PNGs of what
-  you changed: Read them. Pages over 16,384 px tile in a full-page shot; use peek for those.
+  (exit 0: all 16 pages, every research document and the 404, answer as listed; no sideways scroll;
+  a side gutter at 390 px; no serious or critical axe finding and no CSP refusal, light or dark).
+  Add `--only /cost-model` for one page. Each page is written in 4,000 px segments,
+  `<page>-<desktop|mobile>-<scheme>-<n>.png` from the top: Read the ones you changed. (One
+  full-page capture wraps past 8,192 px under SwiftShader and repeats the top; that hid the lower
+  half of every long page until 2026-11-21.) The shots use reduced motion and the 3D stages show
+  dark in them, because a capture resizes the page and no stage has drawn yet: check stages with
+  scenes.ts and story.ts below.
 - **One part of a page:** `heavy node tools/site/peek.ts --url http://localhost:4317 --path /survey --selector ".fig" [--scheme dark] [--width 390] [--wait 2500]` (use --wait for 3D stages; peek waits for `load`, not network idle)
   writes one PNG per matching element into out/peek/.
 - **Interactions:** `heavy node tools/site/interact.ts --url http://localhost:4317` (exit 0: 33 checks
@@ -73,7 +78,10 @@ this run started. If the page is stale, the server is serving an older build: re
 - **Stepped 3D scenes:** `heavy node tools/site/scenes.ts --url http://localhost:4317 --path /design [--only N] [--scheme dark]`
   chooses every step of every `.stage-steps` and writes one PNG per step into out/scenes/, with
   page errors and the live canvas count (exit 0: every step `ready`).
-- **Live site:** the same three tools with `--url https://corerope.space` (or the vercel.app domain).
+- **A story page as a reader scrolls it:** `heavy node tools/site/story.ts --url http://localhost:4317 [--path /] [--width 1440] [--scheme dark]`
+  writes the hero and each story step held where a reader reads it, with its stage drawn, into
+  out/story/.
+- **Live site:** the same tools with `--url https://corerope.space` (or the vercel.app domain).
 
 ## Evidence
 

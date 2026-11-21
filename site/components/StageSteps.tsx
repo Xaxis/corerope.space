@@ -28,7 +28,7 @@ export function StageSteps({
       <Stage scene={scene} step={step} label={label} className="stage-wide" />
       <fieldset className="seg-field">
         <legend>{legend}</legend>
-        <div className="seg">
+        <div className="seg seg-steps">
           {steps.map((s, i) => (
             <label key={s.key} data-on={i === step}>
               <input

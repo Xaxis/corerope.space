@@ -13,7 +13,6 @@ type Props = {
   /** The numbers behind the figure, for reading without the chart. */
   table?: ReactNode;
   note?: ReactNode;
-  id?: string;
   className?: string;
 };
 
@@ -26,7 +25,6 @@ export function Figure({
   sources = [],
   table,
   note,
-  id,
   className,
 }: Props) {
   const scripts = data ? [data.provenance.script] : [];
@@ -37,7 +35,7 @@ export function Figure({
       .map((path) => ({ path, startLine: undefined, endLine: undefined, label: undefined })),
   ];
   return (
-    <figure className={`fig ${className ?? ""}`} id={id}>
+    <figure className={`fig ${className ?? ""}`}>
       <figcaption>
         <p className="fig-title">{title}</p>
         {subtitle && <p className="fig-sub">{subtitle}</p>}
@@ -67,11 +65,11 @@ export function Figure({
               <b>From</b>{" "}
               {from.map((s, i) => (
                 <span key={`${s.path}${s.startLine ?? ""}`}>
-                  {i > 0 && ", "}
                   <a href={blobUrl(s)}>
                     {s.label ?? s.path.split("/").pop()}
-                    {s.startLine ? ` (line ${s.startLine})` : ""}
+                    {s.startLine ? ` (line\u00a0${s.startLine})` : ""}
                   </a>
+                  {i < from.length - 1 && ", "}
                 </span>
               ))}
             </span>

@@ -4,8 +4,8 @@
 // port of costmodel.py. If the design doc's wording changes so a case no longer reads, the build
 // fails and names it, as quote() does.
 import { type Params, run } from "./costmodel";
-import { presets } from "./data";
 import type { Experiment } from "./inventions";
+import { presets } from "./presets";
 import { percent } from "./scale";
 
 export type FailCase = {

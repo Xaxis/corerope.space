@@ -1,7 +1,8 @@
 import golden from "@data/costmodel-golden.json";
 import { describe, expect, it } from "vitest";
 import { fromPosition, PARAMS, type Params, run, toPosition } from "@/lib/costmodel";
-import { costmodel, presets } from "@/lib/data";
+import { costmodel } from "@/lib/data";
+import { presets } from "@/lib/presets";
 
 /** The three cases of a scenario, run, as a tuple the compiler can see has three. */
 function runCases(

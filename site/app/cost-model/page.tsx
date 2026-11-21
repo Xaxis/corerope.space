@@ -1,3 +1,4 @@
+import golden from "@data/costmodel-golden.json";
 import type { Metadata } from "next";
 import { AmdahlStage } from "@/components/Amdahl";
 import { Calculator } from "@/components/Calculator";
@@ -7,9 +8,9 @@ import { Markdown } from "@/components/Markdown";
 import { Callout } from "@/components/Page";
 import { SubNav } from "@/components/SubNav";
 import { Chapter, PageIntro, Pager, Q, researchHref } from "@/components/Template";
-import { aroundPlaceholder, indexOf, part, quote, section } from "@/lib/content";
-import { amdahl, multipliers, presets } from "@/lib/data";
-import { DESIGN } from "@/lib/inventions";
+import { aroundPlaceholder, DESIGN, indexOf, part, quote, section, sourceOf } from "@/lib/content";
+import { amdahl, multipliers } from "@/lib/data";
+import { presets } from "@/lib/presets";
 import { times } from "@/lib/scale";
 import { blobUrl } from "@/lib/site";
 
@@ -36,11 +37,6 @@ export default function CostModel() {
   const et = multipliers.rows.find((r) => r.key === "energy_task");
   const dt = multipliers.rows.find((r) => r.key === "dollars_task");
   const one = amdahl.recorded.find((r) => r.share === 0.01);
-  const src = (s: { startLine: number; endLine: number }) => ({
-    path: DESIGN,
-    startLine: s.startLine,
-    endLine: s.endLine,
-  });
 
   return (
     <>
@@ -116,10 +112,10 @@ export default function CostModel() {
             This is{" "}
             <a href={blobUrl({ path: "site/lib/costmodel.ts" })}>a line-for-line TypeScript port</a>{" "}
             of <a href={blobUrl({ path: MODEL })}>costmodel.py</a>'s <code>run()</code>. A test
-            checks it against outputs the Python wrote for the three presets and 250 random
-            parameter sets, and every output must match to the last bit. The presets come from the
-            script's own <code>S</code> table, read at build time. A model of a design is not a
-            measurement: each input is an assumption that an experiment would test.
+            checks it against outputs the Python wrote for {golden.vectors.length} parameter sets,
+            the presets and random draws, and every output must match to the last bit. The presets
+            come from the script's own <code>S</code> table, read at build time. A model of a design
+            is not a measurement: each input is an assumption that an experiment would test.
           </p>
         </Callout>
       </Chapter>
@@ -129,7 +125,7 @@ export default function CostModel() {
         n="Chapter 2"
         title={BUDGET.replace(" vs ", " against ")}
         lede={<Markdown nodes={split.before.nodes} className="q-prose" />}
-        source={src(budget)}
+        source={sourceOf(budget)}
         more={{ href: researchHref(DESIGN, BUDGET), label: "Read the full section" }}
       >
         <MultiplierFigure />
@@ -142,7 +138,7 @@ export default function CostModel() {
         layout="split"
         title="Dollars lag energy"
         lede={<Markdown nodes={part(split.after, dollars).nodes} className="q-prose" />}
-        source={src(budget)}
+        source={sourceOf(budget)}
       >
         <CostBreakdownFigure />
       </Chapter>
@@ -152,7 +148,7 @@ export default function CostModel() {
         n="Chapter 4"
         title="The Amdahl trap"
         lede={<Q q={quote(DESIGN, TRAP, "If a share f of tasks still runs at baseline cost", 3)} />}
-        source={src(trap)}
+        source={sourceOf(trap)}
         more={{ href: researchHref(DESIGN, TRAP), label: "Read the full section" }}
       >
         <AmdahlStage />

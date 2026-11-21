@@ -1,7 +1,7 @@
 // A closer look at parts of one page: screenshots of every element matching a selector, for checking
-// a chart or a section without a full-page shot (Chromium tiles full-page shots past 16,384 px).
+// a chart or a section without reading a whole page's shots.
 //
-//   ~/.claude/claude-core/bin/heavy node tools/site/peek.ts --url URL --path /levers \
+//   ~/.claude/claude-core/bin/heavy node tools/site/peek.ts --url URL --path /survey \
 //     --selector ".fig" [--scheme light|dark] [--width 1440] [--wait MS] [--out DIR]
 //
 // --wait gives each element time after it scrolls into view: 3D stages load and draw lazily.

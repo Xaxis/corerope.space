@@ -26,15 +26,17 @@ export function SectionView({
   top,
   slugger,
   source = true,
+  className,
 }: {
   section: Section;
   top?: number;
   slugger?: GithubSlugger;
   source?: boolean;
+  className?: string;
 }) {
   return (
     <div className="section">
-      <Markdown nodes={section.nodes} top={top} slugger={slugger} />
+      <Markdown nodes={section.nodes} top={top} slugger={slugger} className={className} />
       {source && (
         <SourceLink path={section.file} startLine={section.startLine} endLine={section.endLine} />
       )}

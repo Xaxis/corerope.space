@@ -46,11 +46,12 @@ export default async function Doc({ params }: { params: Promise<{ slug: string }
     <>
       <PageIntro
         n="06"
-        kicker={d.kind === "note" ? "Research note" : d.short}
+        kicker={d.kind === "note" ? "Research note" : "Research document"}
         title={docTitle(d.file)}
         lede={
           <p className="crumbs">
-            <Link href="/research">The research</Link> / {d.short} · about {minutes} minutes
+            <Link href="/research">The research</Link> / {d.short} · about{"\u00a0"}
+            {minutes === 1 ? "1\u00a0minute" : `${minutes}\u00a0minutes`}
           </p>
         }
         files={[d.file]}

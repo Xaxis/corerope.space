@@ -15,15 +15,16 @@ import { StageSteps } from "@/components/StageSteps";
 import { SubNav } from "@/components/SubNav";
 import { Chapter, PageIntro, Pager, Q, researchHref } from "@/components/Template";
 import { Stage } from "@/components/three/Stage";
-import { docTitle, indexOf, quote, type Section, section } from "@/lib/content";
+import { DESIGN, docTitle, indexOf, quote, type Section, section, sourceOf } from "@/lib/content";
 import { multipliers } from "@/lib/data";
-import { DESIGN, type Invention, inventions, type Slug } from "@/lib/inventions";
+import { type Invention, inventions, type Slug } from "@/lib/inventions";
 import { times } from "@/lib/scale";
+
+const tested = inventions().filter((x) => x.experiments.length > 0).length;
 
 export const metadata: Metadata = {
   title: "The design",
-  description:
-    "The seven parts of the Corerope stack, each with the cost term it attacks, the way it could fail, and the experiment that would falsify it.",
+  description: `The ${inventions().length} parts of the Corerope stack: the cost term each attacks, how each could fail, and, for ${tested} of them, the experiment that would falsify it.`,
   alternates: { canonical: "/design" },
 };
 
@@ -62,11 +63,10 @@ const RISK: Record<Slug, { label: string; start: string; sentences: number }> = 
   },
 };
 
-/** The block that follows a paragraph starting with `start`: a list or table the part spells out. */
+/** A bold lead-in paragraph starting with `start` and the list or table it introduces. */
 function after(s: Section, start: string): Section["nodes"] {
   const i = indexOf(s, start);
-  const next = s.nodes[i + 1];
-  return next ? [next] : [];
+  return s.nodes.slice(i, i + 2);
 }
 
 const PICK = "Show in the scene";
@@ -75,6 +75,31 @@ const ILLUSTRATION = (
     An illustration of the mechanism: the counts and lengths in the scene are not data.
   </p>
 );
+
+/**
+ * The sentences a part's first scene step shows under its stage, named once: the chapter's lede
+ * leaves them out, so the caption does not repeat the lede a screen above it.
+ */
+const FIRST_STEP: Partial<Record<Slug, [start: string, sentences: number]>> = {
+  "wired-ternary": ["In wired-weight silicon a weight", 2],
+  "tokens-per-task": ["Cheaper tokens get spent", 2],
+  "context-cartridges": ["Once weights stop moving", 1],
+};
+
+function firstStep(x: Invention) {
+  const at = FIRST_STEP[x.slug];
+  if (!at) throw new Error(`design: no first step named for ${x.slug}`);
+  return quote(DESIGN, x.heading, ...at);
+}
+
+/** A part's opening paragraph, less what its first scene step already shows. */
+function lede(x: Invention): string {
+  if (!FIRST_STEP[x.slug]) return x.summary;
+  const shown = firstStep(x).text;
+  if (!x.summary.startsWith(shown))
+    throw new Error(`design: ${x.slug}'s first step no longer opens its section`);
+  return x.summary.slice(shown.length).trim() || x.summary;
+}
 
 function evidence(x: Invention): ReactNode {
   const s = x.section;
@@ -103,7 +128,7 @@ function evidence(x: Invention): ReactNode {
               {
                 key: "connection",
                 title: "A weight is a wire",
-                body: <Q q={quote(DESIGN, h, "In wired-weight silicon a weight", 2)} />,
+                body: <Q q={firstStep(x)} />,
               },
               {
                 key: "shared",
@@ -174,7 +199,10 @@ function evidence(x: Invention): ReactNode {
             ]}
           />
           {ILLUSTRATION}
-          <Markdown nodes={after(s, "Two levels, split by when the address is known.")} />
+          <Markdown
+            nodes={after(s, "Two levels, split by when the address is known.")}
+            className="q-prose"
+          />
         </>
       );
     case "tokens-per-task":
@@ -188,7 +216,7 @@ function evidence(x: Invention): ReactNode {
               {
                 key: "spent",
                 title: "Cheaper tokens get spent",
-                body: <Q q={quote(DESIGN, h, "Cheaper tokens get spent", 2)} />,
+                body: <Q q={firstStep(x)} />,
               },
               {
                 key: "joules",
@@ -226,7 +254,7 @@ function evidence(x: Invention): ReactNode {
               {
                 key: "reread",
                 title: "Re-reading the corpus",
-                body: <Q q={quote(DESIGN, h, "Once weights stop moving", 1)} />,
+                body: <Q q={firstStep(x)} />,
               },
               {
                 key: "cartridge",
@@ -262,7 +290,6 @@ export default function Design() {
   const dt = multipliers.rows.find((r) => r.key === "dollars_task");
   const where = section(DESIGN, "Where the remaining 1000x hides");
   const table = where.nodes.find((n) => n.type === "table");
-  const src = (s: Section) => ({ path: DESIGN, startLine: s.startLine, endLine: s.endLine });
 
   return (
     <>
@@ -295,7 +322,7 @@ export default function Design() {
             : []),
           {
             value: String(parts.length),
-            label: "Parts, each with its test",
+            label: "Parts of the design",
             note: `${parts.filter((x) => x.experiments.length === 0).length} still lack a falsification experiment`,
           },
         ]}
@@ -304,7 +331,7 @@ export default function Design() {
           <span className="pill">
             <span className="dot" aria-hidden="true" />A design, not a result
           </span>
-          {quote(DESIGN, "Summary", "Nothing here is proven at scale", 2).text}
+          {quote(DESIGN, "Summary", "Nothing here is proven at scale", 1).text}
         </p>
       </PageIntro>
       <SubNav
@@ -325,7 +352,7 @@ export default function Design() {
             <Q q={quote(DESIGN, where.title, "Each row's floor is reachable only if", 3)} />
           </>
         }
-        source={src(where)}
+        source={sourceOf(where)}
         more={{ href: researchHref(DESIGN, where.title), label: "Read the full section" }}
       >
         {table && <Markdown nodes={[table]} />}
@@ -341,22 +368,22 @@ export default function Design() {
             n={x.number}
             title={x.name}
             layout="split"
-            lede={<p className="q">{x.summary}</p>}
+            lede={<p className="q">{lede(x)}</p>}
             aside={
               <div className="part-risk">
                 <p className="part-label">{risk.label}</p>
                 <Q q={quote(DESIGN, x.heading, risk.start, risk.sentences)} />
               </div>
             }
-            source={src(x.section)}
+            source={sourceOf(x.section)}
             more={{ href: researchHref(DESIGN, x.heading), label: "Read the full section" }}
           >
             {evidence(x)}
             <div className="part-test">
               <h3 className="part-label">
-                {x.experiments.length === 1
-                  ? "The experiment that would falsify it"
-                  : "The experiments that would falsify it"}
+                {x.experiments.length > 1
+                  ? "The experiments that would falsify it"
+                  : "The experiment that would falsify it"}
               </h3>
               {x.experiments.length > 0 ? (
                 x.experiments.map((e) => <ExperimentCard key={e.order} e={e} links={false} />)

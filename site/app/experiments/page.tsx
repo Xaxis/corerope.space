@@ -8,23 +8,35 @@ import { Markdown, SectionView } from "@/components/Markdown";
 import { Callout } from "@/components/Page";
 import { SubNav } from "@/components/SubNav";
 import { Chapter, PageIntro, Pager, researchHref, Stats } from "@/components/Template";
-import { DOCS, docTitle, part, section, sectionsNamed } from "@/lib/content";
+import {
+  BRIEF,
+  DESIGN,
+  DOCS,
+  docTitle,
+  part,
+  RESULTS,
+  SURVEY,
+  section,
+  sectionsNamed,
+  sourceOf,
+} from "@/lib/content";
 import { gates, multipliers, roadmap, spw } from "@/lib/data";
-import { DESIGN, inventions } from "@/lib/inventions";
+import { inventions, wireExperiment } from "@/lib/inventions";
 import { times } from "@/lib/scale";
 import { blobUrl } from "@/lib/site";
 
-const RESULTS = "experiments/RESULTS.md";
-const SURVEY = "research/01-report-path-to-1000x.md";
-const BRIEF = "00-BRIEF.md";
 const TESTS = "Experiments: what was tested, and what to run next";
 const KILL = "What could kill it";
+const wireTest = wireExperiment().order;
 const PRIOR = "Prior art and sources";
+
+/** Research text set in the page's own face: between sans ledes and cards, the serif long-read face
+ * read as another site. The library keeps the serif. */
+const SANS = "prose prose-sans";
 
 export const metadata: Metadata = {
   title: "Experiments and risks",
-  description:
-    "What the Corerope research tested and this site re-runs, the seven experiments that would confirm or kill the design, what could kill it, the known gaps in the evidence, and the prior art.",
+  description: `What the Corerope research tested and this site re-runs, the ${roadmap.experiments.length} experiments that would confirm or kill the design, what could kill it, the known gaps in the evidence, and the prior art.`,
   alternates: { canonical: "/experiments" },
 };
 
@@ -41,7 +53,7 @@ const SCRIPTS = [
   { path: "experiments/wired-layers/run2.sh", note: "the same, for gen2.py's designs" },
   { path: "experiments/spw-model/adds.py", note: "the add-count model" },
   { path: "experiments/cost-model/costmodel.py", note: "the cost model" },
-  { path: "experiments/RESULTS.md", note: "the recorded outputs" },
+  { path: RESULTS, note: "the recorded outputs" },
 ];
 
 export default function Experiments() {
@@ -56,11 +68,6 @@ export default function Experiments() {
   const gapItems = gaps.nodes
     .filter((n) => n.type === "list")
     .flatMap((l) => (l.type === "list" ? l.children : []));
-  const src = (path: string, s: { startLine: number; endLine: number }) => ({
-    path,
-    startLine: s.startLine,
-    endLine: s.endLine,
-  });
   // Headings rendered inside chapters get ids from one slugger, after the chapter ids are taken.
   const slugger = new GithubSlugger();
   for (const id of ["run", "roadmap", "risks", "gaps", "open", "program", "prior", "scripts"])
@@ -130,7 +137,7 @@ export default function Experiments() {
             {
               value: spw.matches_recorded ? "All match" : "Differ",
               label: "Shared partial-sum add counts",
-              note: "Every ratio for the four layer shapes, to two decimals",
+              note: `Every ratio for the ${spw.layers.length} layer shapes, to two decimals`,
             },
             {
               value: "Exact",
@@ -142,9 +149,9 @@ export default function Experiments() {
         <Callout kind="note">
           <p>
             <strong>Reproduce it.</strong> With Python 3.12 and <code>uv</code>:{" "}
-            <code>make venv</code>, then <code>make synth</code> (the 15 syntheses take minutes),{" "}
-            <code>make data</code> and <code>make check</code>, which compares every output with
-            RESULTS.md and runs the site's tests.
+            <code>make venv</code>, then <code>make synth</code> (the {gates.designs.length}{" "}
+            syntheses take minutes), <code>make data</code> and <code>make check</code>, which
+            compares every output with RESULTS.md and runs the site's tests.
           </p>
         </Callout>
         <GatesFigure />
@@ -152,8 +159,8 @@ export default function Experiments() {
         <Callout kind="gap" label="Known gap">
           <p>
             <strong>Gate counts are not energy.</strong> They exclude wire energy, which dominates
-            fully spatial designs, and Yosys ran without ABC logic optimization. Experiment 1 below
-            is the measurement that would settle it.
+            fully spatial designs, and Yosys ran without ABC logic optimization. Experiment{" "}
+            {wireTest} below is the measurement that would settle it.
           </p>
         </Callout>
       </Chapter>
@@ -161,11 +168,11 @@ export default function Experiments() {
       <Chapter
         id="roadmap"
         n="Chapter 2"
-        title="Seven experiments, cheapest decisive first"
+        title={`${roadmap.experiments.length} experiments, cheapest decisive first`}
         lede={
           <p className="q">
             Each one confirms or kills a part of the design. Nothing about model quality has been
-            tested yet; experiments 2 to 6 are where that happens.
+            tested yet: no experiment on this list has been run.
           </p>
         }
         source={{ path: DESIGN, startLine: roadmap.line, endLine: tests.endLine }}
@@ -183,10 +190,10 @@ export default function Experiments() {
         n="Chapter 3"
         title={KILL}
         lede={<Markdown nodes={part(kill, 0, 1).nodes} className="q-prose" />}
-        source={src(DESIGN, kill)}
+        source={sourceOf(kill)}
         more={{ href: researchHref(DESIGN, KILL), label: "Read the full section" }}
       >
-        <SectionView section={part(kill, 1)} slugger={slugger} source={false} />
+        <SectionView section={part(kill, 1)} slugger={slugger} source={false} className={SANS} />
       </Chapter>
 
       <Chapter
@@ -198,7 +205,7 @@ export default function Experiments() {
             The brief lists what the evidence does not yet show. Each gap, as written:
           </p>
         }
-        source={src(BRIEF, gaps)}
+        source={sourceOf(gaps)}
       >
         <div className="gaps">
           {gapItems.map((item) => (
@@ -227,12 +234,14 @@ export default function Experiments() {
               <details key={d.slug} className="note-gaps">
                 <summary>
                   <span>{docTitle(d.file)}</span>
-                  <span className="muted"> {list.length} questions</span>
+                  <span className="muted">
+                    {list.length} {list.length === 1 ? "question" : "questions"}
+                  </span>
                 </summary>
                 {list.map((g) => (
                   <div key={g.startLine} className="note-gap">
                     <h3 className="note-gap-q">{g.parent}</h3>
-                    <SectionView section={g} slugger={slugger} />
+                    <SectionView section={g} slugger={slugger} className={SANS} />
                   </div>
                 ))}
                 <p className="deep-dive">
@@ -255,20 +264,26 @@ export default function Experiments() {
             experiments follow.
           </p>
         }
-        source={src(SURVEY, program)}
+        source={sourceOf(program)}
         more={{ href: researchHref(SURVEY, program.title), label: "Read the full section" }}
       >
-        <SectionView section={part(program, 1)} top={3} slugger={slugger} source={false} />
+        <SectionView
+          section={part(program, 1)}
+          top={3}
+          slugger={slugger}
+          source={false}
+          className={SANS}
+        />
       </Chapter>
 
       <Chapter
         id="prior"
         n="Chapter 7"
         title={PRIOR}
-        source={src(DESIGN, prior)}
+        source={sourceOf(prior)}
         more={{ href: "/research#sources", label: "Every source the research cites" }}
       >
-        <SectionView section={prior} slugger={slugger} source={false} />
+        <SectionView section={prior} slugger={slugger} source={false} className={SANS} />
       </Chapter>
 
       <Chapter
@@ -277,8 +292,8 @@ export default function Experiments() {
         title="The scripts"
         lede={
           <p className="q">
-            As recorded, unchanged. The site's data step runs them; nothing on this site is typed in
-            by hand.
+            As recorded, unchanged. The site's data step runs them, and the pages read their numbers
+            from what it writes.
           </p>
         }
       >

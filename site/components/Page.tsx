@@ -1,12 +1,6 @@
 import type { ReactNode } from "react";
 
 const ICONS = {
-  status: (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
-      <circle cx="10" cy="10" r="7.5" />
-      <path d="M10 6v4.5M10 13.5v.5" strokeLinecap="round" />
-    </svg>
-  ),
   gap: (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
       <path d="M10 3 18 16.5H2z" strokeLinejoin="round" />
@@ -27,7 +21,7 @@ const ICONS = {
   ),
 };
 
-/** A boxed aside. Kinds: the project's status, a known gap, a TODO the research leaves open, a note. */
+/** A boxed aside. Kinds: a known gap, a TODO the research leaves open, a note. */
 export function Callout({
   kind,
   children,

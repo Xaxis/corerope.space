@@ -4,33 +4,30 @@ import { BudgetFigure, MultiplierFigure } from "@/components/figures";
 import { StoryChapter } from "@/components/Story";
 import { Chapter, ChapterFoot, Pager, Q, Stats } from "@/components/Template";
 import { Stage } from "@/components/three/Stage";
-import { quote, section } from "@/lib/content";
-import { amdahl, decodeEnergy, levers, multipliers, roadmap } from "@/lib/data";
-import { DESIGN, inventions } from "@/lib/inventions";
+import { BRIEF, DESIGN, quote, SURVEY, section, sourceOf } from "@/lib/content";
+import { amdahl, decodeEnergy, leverTotal, multipliers, roadmap } from "@/lib/data";
+import { inventions } from "@/lib/inventions";
+import { presets } from "@/lib/presets";
 import { times } from "@/lib/scale";
 
-const SURVEY = "research/01-report-path-to-1000x.md";
-const BRIEF = "00-BRIEF.md";
-
-function lines(heading: string, file = DESIGN) {
-  const s = section(file, heading);
-  return { path: file, startLine: s.startLine, endLine: s.endLine };
-}
+const lines = (heading: string, file = DESIGN) => sourceOf(section(file, heading));
 
 export default function Home() {
   const row = (k: string) => multipliers.rows.find((r) => r.key === k);
   const et = row("energy_task");
   const dt = row("dollars_task");
   const cap = amdahl.recorded.find((r) => r.share === 0.01);
-  const total = (b: "b2024" | "b2026", what: string) =>
-    levers.budgets[b].rows.find((r) => r.kind === "total" && !r.naive && r.label.includes(what))
-      ?.central;
   const c = decodeEnergy.coefficients;
   const ratio = c.pj_per_hbm_bit / c.pj_per_flop;
   const where = "Where the remaining 1000x hides";
   const inv4 = section(DESIGN, "Invention 4");
   const inv6 = section(DESIGN, "Invention 6");
-  const missing = inventions().filter((x) => x.experiments.length === 0);
+  const parts = inventions();
+  const missing = parts.filter((x) => x.experiments.length === 0);
+  // The baseline token as the cost model's cases hold it: one price, a range of joules.
+  const cases = presets("fabric");
+  const joules = cases.map((p) => p.base_J_per_tok);
+  const price = cases[1].base_usd_per_Mtok;
 
   return (
     <>
@@ -56,7 +53,7 @@ export default function Home() {
             <span className="pill">
               <span className="dot" aria-hidden="true" />A design, not a result
             </span>
-            {quote(DESIGN, "Summary", "Nothing here is proven at scale", 2).text}
+            {quote(DESIGN, "Summary", "Nothing here is proven at scale", 1).text}
           </p>
           <div className="actions">
             <a className="btn btn-primary" href="#today">
@@ -100,9 +97,9 @@ export default function Home() {
                   ]
                 : []),
               {
-                value: `~${times(total("b2026", "cost") ?? 0)}`,
+                value: `~${times(leverTotal("b2026", "cost"))}`,
                 label: "What known levers give",
-                note: `Against the same late-2026 baseline, in dollars; ~${times(total("b2026", "energy") ?? 0)} in energy`,
+                note: `Against the same late-2026 baseline, in dollars; ~${times(leverTotal("b2026", "energy"))} in energy`,
               },
               ...(cap
                 ? [
@@ -116,8 +113,8 @@ export default function Home() {
             ]}
           />
           <p className="numbers-note">
-            Modeled by the design's cost model, not measured. Every part has an experiment that
-            could prove it wrong.
+            Modeled by the design's cost model, not measured. {parts.length - missing.length} of the{" "}
+            {parts.length} parts have an experiment that could prove them wrong.
           </p>
         </div>
       </section>
@@ -131,7 +128,7 @@ export default function Home() {
         steps={[
           {
             key: "price",
-            title: "A late-2026 token: $0.12 per million, 0.5 to 2 J each",
+            title: `A late-2026 token: $${price} per million, ${Math.min(...joules)} to ${Math.max(...joules)} J each`,
             body: <Q q={quote(DESIGN, where, "A late-2026 frontier token costs about", 2)} />,
           },
           {
@@ -191,7 +188,7 @@ export default function Home() {
       <Chapter
         id="levers"
         n="Chapter 2"
-        title="Why the known levers stall at about 35x"
+        title={`Why the known levers stall at about ${times(leverTotal("b2026", "cost"))}`}
         lede={
           <>
             <Q q={quote(SURVEY, "", "A roughly 1000x cut in cost and energy per solved task", 1)} />
@@ -204,14 +201,14 @@ export default function Home() {
         <Stats
           items={[
             {
-              value: `~${times(total("b2024", "cost") ?? 0)}`,
+              value: `~${times(leverTotal("b2024", "cost"))}`,
               label: "Against 2024, in dollars",
-              note: `~${times(total("b2024", "energy") ?? 0)} in energy`,
+              note: `~${times(leverTotal("b2024", "energy"))} in energy`,
             },
             {
-              value: `~${times(total("b2026", "cost") ?? 0)}`,
+              value: `~${times(leverTotal("b2026", "cost"))}`,
               label: "Against late 2026, in dollars",
-              note: `~${times(total("b2026", "energy") ?? 0)} in energy`,
+              note: `~${times(leverTotal("b2026", "energy"))} in energy`,
               tone: "accent",
             },
           ]}
@@ -437,7 +434,7 @@ export default function Home() {
               <div>
                 <p className="exp-list-what">{e.experiment}</p>
                 <p className="exp-list-bar">
-                  <b>Passes if</b> {e.pass_bar.charAt(0).toLowerCase() + e.pass_bar.slice(1)}
+                  <b>Pass bar:</b> {e.pass_bar}
                 </p>
               </div>
             </li>

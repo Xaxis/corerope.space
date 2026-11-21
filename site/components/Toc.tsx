@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
 export type TocItem = { id: string; text: string; depth: number };
 
 /** A page's contents, with the section in view marked as you scroll. */
-export function Toc({ items, title = "On this page" }: { items: TocItem[]; title?: string }) {
+const title = "On this page";
+
+export function Toc({ items }: { items: TocItem[] }) {
   const [active, setActive] = useState<string | null>(null);
   useEffect(() => {
     const els = items

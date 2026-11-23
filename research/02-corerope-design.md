@@ -16,7 +16,7 @@ The stack has seven parts:
 6. Price tokens per task into training, so cheap tokens are not spent on longer reasoning.
 7. Keep every task on the new stack: the cost model shows a 1% fallback to GPU serving caps the energy gain at about 92x.
 
-Nothing here is proven at scale. Each part comes with the first experiment that would falsify it.
+Nothing here is proven at scale. Each of these seven parts comes with the first experiment that would falsify it; two inventions described below, the lookup-in-storage tier (Invention 4) and context cartridges (Invention 6), have none yet.
 
 ## Where the remaining 1000x hides
 
@@ -119,7 +119,7 @@ Cheaper tokens get spent: median output per task rose from ~35k to ~59k tokens i
 - **Compiled skills.** When the fleet solves the same sub-procedure many times (a parsing routine, an API workflow, a unit conversion), it is distilled into verified code or an adapter that later tasks call for nearly zero tokens. Agent sessions reuse 85 to 99% of their context across turns, which suggests heavy repetition, but the share of reasoning a skill library can absorb is unmeasured. Skills would be built only from opted-in or synthetic traces and scoped per tenant.
 - **Grounded latent reasoning.** The core reasons for a few steps in continuous vectors, then must write a short text checkpoint of what it concluded. A 2026 latent-reasoning method cut 58% of tokens for 2.8 points. The required checkpoints keep reasoning readable for oversight; dropping them would save more tokens but make the model's thinking harder to monitor, a trade this design refuses.
 
-If these fail and the small core needs 1.5x more tokens than the baseline (the pessimistic case), the energy gain per task falls by a further 2.25x relative to the central case.
+If these fail and the small core needs 1.5x more tokens than the baseline (the pessimistic case), the cost model's central energy gain per task falls from 749x to 422x, a further 1.8x, and its dollar gain from 263x to 127x. The fall is smaller than the 2.2x rise in tokens because the GPU fallback is charged at the baseline's own cost per task.
 
 ## Invention 6: Context cartridges for a frozen core
 

@@ -53,7 +53,7 @@ const RISK: Record<Slug, { label: string; start: string; sentences: number }> = 
   "tokens-per-task": {
     label: "If it fails",
     start: "If these fail and the small core needs",
-    sentences: 1,
+    sentences: 2,
   },
   "context-cartridges": { label: "The budget", start: "Per user the core holds", sentences: 2 },
   "two-tier-fleet": {

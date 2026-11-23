@@ -52,6 +52,17 @@ export function Footer() {
         <div className="foot-note">
           <span>Every number on this site links to the research file or script it came from.</span>
           <span>
+            Code under{" "}
+            <a href={`${SITE.repo}/blob/${SITE.branch}/LICENSE`} className="nowrap">
+              Apache-2.0
+            </a>
+            , text and data under{" "}
+            <a href={`${SITE.repo}/blob/${SITE.branch}/LICENSE-CC-BY-4.0`} className="nowrap">
+              CC BY 4.0
+            </a>
+            .
+          </span>
+          <span>
             Built from{" "}
             <a href={commit} className="mono">
               {BUILD === "dev" ? "a local build" : BUILD}

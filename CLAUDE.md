@@ -40,4 +40,5 @@ renders them and charts data generated from them. README.md has the layout and h
   (team xaxis-projects) and proves the live domains serve that commit. Pushing does not deploy.
 - `.claude/skills/verify/` says how to check each feature; update it in the same commit as a
   feature change.
-- License: not chosen yet (README.md). Do not add a LICENSE file without the owner's say.
+- License: Apache-2.0 for code (`LICENSE`), CC BY 4.0 for writing and data (`LICENSE-CC-BY-4.0`);
+  README.md says which paths are which. A new kind of file follows the same split.

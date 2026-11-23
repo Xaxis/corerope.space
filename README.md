@@ -80,5 +80,7 @@ live site serves that commit.
 
 ## License
 
-TODO: not chosen yet. The brief suggests Apache-2.0 for the code and CC BY 4.0 for the research text,
-pending the author's confirmation. Until a license is added, all rights are reserved.
+The code is under the [Apache License 2.0](LICENSE): `site/`, `scripts/`, `tools/` and the scripts in
+`experiments/`. The writing and the data are under [CC BY 4.0](LICENSE-CC-BY-4.0): every Markdown
+file (the research in `research/`, the brief, the experiment results) and the generated `data/`. To
+reuse the research, credit "Corerope, https://corerope.space" and link the file you drew on.

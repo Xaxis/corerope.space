@@ -54,9 +54,9 @@ checks that experiment 7's "Open this case" link opens the calculator on the new
 
 - failures.ts reads each value from the doc's "if it fails" wording or the presets and throws at
   build time if the wording drifts ("failures: experiment N's ... no longer says ...").
-- Experiment 6's case lowers the gain by less than the doc's "further 2.25x": the model keeps the
-  GPU fallback at baseline cost whatever the tokens. The card shows the model's number, labelled
-  derived; the doc's sentence is not changed.
+- Experiment 6's case (1.5x more tokens) lowers the energy gain 1.8x, not the 2.2x token ratio: the
+  model keeps the GPU fallback at baseline cost whatever the tokens. The card shows the model's
+  422x, labelled derived, and the design doc's Invention 5 says the same (749x to 422x).
 - "15 of 15" comes from data/gates.json's `reproduced` flags. Without Yosys logs (no `make synth`),
   `make data` writes null and the page says the counts were not re-run. That is correct, not a bug.
 - The gaps are read from 00-BRIEF.md's "Known gaps" list. Editing that list changes this page.

@@ -170,6 +170,38 @@ try {
   const panel = page.getByRole("tabpanel").filter({ hasText: "Capability density" });
   check("the B2024 tab shows Table A's levers", await panel.isVisible());
 
+  // The contents list and the chapter bar mark the section a link jumps to. A jump stops a section
+  // below the header (scroll padding plus its own scroll margin); the marker must count it as reached.
+  const jumpMarks = async (nav: string, href: string) => {
+    await page.locator(`${nav} a[href="${href}"]`).click();
+    await page
+      .waitForFunction(
+        ([n, h]) =>
+          document.querySelector(`${n} a[aria-current="location"]`)?.getAttribute("href") === h,
+        [nav, href],
+        { timeout: 3000 },
+      )
+      .catch(() => {});
+    return page
+      .locator(`${nav} a[aria-current="location"]`)
+      .evaluateAll((as) => as.map((a) => a.getAttribute("href")));
+  };
+  await page.goto(`${base}/research/corerope-design`, { waitUntil: "networkidle" });
+  const tocHref = (await page.locator(".toc a").nth(4).getAttribute("href")) ?? "";
+  const toc = await jumpMarks(".toc", tocHref);
+  check(
+    "a contents link marks the section it jumps to",
+    toc.length === 1 && toc[0] === tocHref,
+    `${toc.join(" ")} for ${tocHref}`,
+  );
+  await page.goto(`${base}/design`, { waitUntil: "networkidle" });
+  const sub = await jumpMarks(".subnav", "#rom-core");
+  check(
+    "a chapter link marks the chapter it jumps to",
+    sub.length === 1 && sub[0] === "#rom-core",
+    sub.join(" "),
+  );
+
   // The hero's 3D stage draws, and its pause button works.
   await page.goto(`${base}/`, { waitUntil: "networkidle" });
   const hero = page.locator(".hero3d .stage");

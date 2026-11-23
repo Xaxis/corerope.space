@@ -784,7 +784,7 @@ tbody tr:hover td {
   color: var(--ink);
   border-left-color: var(--hair-strong);
 }
-.toc li a[data-active="true"] {
+.toc li a[aria-current="location"] {
   color: var(--accent);
   border-left-color: var(--accent-mark);
 }

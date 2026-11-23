@@ -133,7 +133,7 @@ Tokens per task are rising, not falling. On Artificial Analysis Intelligence Ind
 - **Selective Latent Thinking (v2 Oct 2026)**, latent compression of CoT:
   - Llama-3.2-1B: explicit reasoning **-58.4% for -2.8 points**.
   - The method is fragile: naive arbitrary-span latent compression on Qwen3-4B GSM-Hard dropped accuracy from 54.7% to 17.3%, but keeping numerical tokens explicit held it at 51.8%.
-  - Against Latent-GRPO: +5.6 points with 13% fewer tokens. | [alphaXiv 2605.25745](https://www.alphaxiv.org/abs/2605.25745)
+  - Against Latent-GRPO: +5.6 points with 13% fewer tokens. | [arXiv 2605.25745](https://arxiv.org/abs/2605.25745)
 - Agentic overthinking: selecting solutions with lower "overthinking scores" improved performance 30% while cutting compute overhead 43%. | [Stop Overthinking survey, arXiv 2503.16419](https://arxiv.org/pdf/2503.16419v4)
 - Pathological example: answering "0.9 vs 0.11" took QwQ-32B 19 s and DeepSeek-R1 42 s. | [same survey](https://arxiv.org/pdf/2503.16419v4)
 

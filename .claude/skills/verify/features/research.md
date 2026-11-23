@@ -58,3 +58,7 @@ full count.
 
 - TOC links must match heading ids: both come from github-slugger in one pass. Two headings with the
   same text get -1 suffixes; a TOC built with a fresh slugger would point at the wrong one.
+- The TOC marks the section in view with `aria-current="location"` (useSectionInView). A section
+  counts as reached at the line where a jump to it stops: the page's scroll padding plus the
+  heading's scroll margin (176 px on research pages). A fixed threshold above that line leaves the
+  section just jumped to unmarked; interact checks "a contents link marks the section it jumps to".

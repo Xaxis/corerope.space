@@ -124,7 +124,7 @@ With modern SwiGLU models, training-free magnitude sparsity (TEAL) reaches 40-50
 Gains here are small and shrinking. A 2026 study finds early-exit opportunity has fallen in newer, better-trained models: at an oracle 5-point MMLU tolerance, Llama3-8B can skip only 0.18% of layers, versus 4.69% for Llama2-7B. Mixture-of-depths showed isoFLOP training wins at at most 3B scale, but downstream and serving benefits are unproven. Its top-k routing is also non-causal at decode. These are at most low-single-digit percentage to about 1.5x levers in practice, far below MoE or quantization.
 
 ### Cited Findings
-- "The Diminishing Returns of Early-Exit Decoding in Modern LLMs" (arXiv 2603.23701, Mar 2026) | source: [alphaXiv](https://www.alphaxiv.org/abs/2603.23701)
+- "The Diminishing Returns of Early-Exit Decoding in Modern LLMs" (arXiv 2603.23701, Mar 2026) | source: [arXiv](https://arxiv.org/abs/2603.23701)
   - Oracle MMLU tests: Llama2-7B skips 4.69% of layers (accuracy 0.41 to 0.38); Llama3-8B skips 0.18% (0.54 to 0.52).
   - Improved pretraining recipes reduce layer redundancy. Larger models (over 20B) and base models show more potential. Dense transformers offer more early-exit potential than MoE and SSMs.
   - Reported as layer-skip proxies only, with no wall-clock speedups.

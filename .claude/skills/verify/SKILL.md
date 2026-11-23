@@ -71,10 +71,10 @@ this run started. If the page is stale, the server is serving an older build: re
   scenes.ts and story.ts below.
 - **One part of a page:** `heavy node tools/site/peek.ts --url http://localhost:4317 --path /survey --selector ".fig" [--scheme dark] [--width 390] [--wait 2500]` (use --wait for 3D stages; peek waits for `load`, not network idle)
   writes one PNG per matching element into out/peek/.
-- **Interactions:** `heavy node tools/site/interact.ts --url http://localhost:4317` (exit 0: 33 checks
+- **Interactions:** `heavy node tools/site/interact.ts --url http://localhost:4317` (exit 0: 35 checks
   on the calculator, presets, shared links, experiment failure cases, the source filter, tabs, the
-  3D stages and story, scene step pickers, stage release, tooltips, theme, reduced motion and the
-  phone).
+  contents list and chapter bar marking the section a link jumps to, the 3D stages and story, scene
+  step pickers, stage release, tooltips, theme, reduced motion and the phone).
 - **Stepped 3D scenes:** `heavy node tools/site/scenes.ts --url http://localhost:4317 --path /design [--only N] [--scheme dark]`
   chooses every step of every `.stage-steps` and writes one PNG per step into out/scenes/, with
   page errors and the live canvas count (exit 0: every step `ready`).

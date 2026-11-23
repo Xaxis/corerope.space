@@ -1,26 +1,10 @@
 "use client";
 
 // The chapters of a long page, in a row that stays under the header, with the one in view marked.
-import { useEffect, useState } from "react";
+import { useSectionInView } from "./useSectionInView";
 
 export function SubNav({ items, label }: { items: { id: string; text: string }[]; label: string }) {
-  const [active, setActive] = useState<string | null>(null);
-  useEffect(() => {
-    const els = items
-      .map((i) => document.getElementById(i.id))
-      .filter((e): e is HTMLElement => !!e);
-    const onScroll = () => {
-      let current: string | null = null;
-      for (const el of els) {
-        if (el.getBoundingClientRect().top < 140) current = el.id;
-        else break;
-      }
-      setActive(current);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [items]);
+  const active = useSectionInView(items);
   return (
     <nav className="subnav" aria-label={label}>
       <div className="wrap">

@@ -31,7 +31,7 @@ corerope/
   data/                   JSON extracted for the charts (generated, with a script)
 ```
 
-Suggested licenses: Apache-2.0 for code, CC BY 4.0 for the research text. Confirm with Wil before publishing.
+Licenses (chosen Nov 23, 2026): Apache-2.0 for code, CC BY 4.0 for the research text and data. README.md says which paths are which.
 
 ## Website requirements
 

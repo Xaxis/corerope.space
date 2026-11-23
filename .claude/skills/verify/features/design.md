@@ -67,6 +67,9 @@ reader's pause surviving the rebuild.
 
 ## Gotchas
 
+- The subnav shares the TOC's useSectionInView: a chapter counts as reached where a jump to it stops
+  (scroll padding plus the chapter's scroll margin). interact checks "a chapter link marks the chapter
+  it jumps to".
 - A scene that throws on its first frame leaves the stage `data-status="failed"` and logs
   `stage "<name>" failed to start:` with the error in the browser console (scenes.ts prints it).
   test/scenes.test.ts runs every scene without a GPU and catches most of these first.
